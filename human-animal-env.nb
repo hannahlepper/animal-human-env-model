@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    480037,      10622]
-NotebookOptionsPosition[    477856,      10552]
-NotebookOutlinePosition[    478227,      10568]
-CellTagsIndexPosition[    478184,      10565]
+NotebookDataLength[    478923,      10603]
+NotebookOptionsPosition[    476805,      10537]
+NotebookOutlinePosition[    477176,      10553]
+CellTagsIndexPosition[    477133,      10550]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -10065,414 +10065,183 @@ VgJf8rzlKvTtfaqknXEYJ9dy6wVvvEKG5tD5VxTU7e1XES8G6kZij/wawUGG
 Cell[BoxData[
  RowBox[{
   RowBox[{"(*", 
-   RowBox[{
-   "Equilibrium", " ", "analysis", " ", "for", " ", "sensitivity", " ", 
-    "analysis"}], "*)"}], "\[IndentingNewLine]", 
-  RowBox[{
-   RowBox[{
-    RowBox[{"ODESystem3", " ", "=", " ", 
-     RowBox[{"{", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{
-        RowBox[{
-         SubscriptBox["\[CapitalLambda]", "H"], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "AH"], "*", 
-         RowBox[{"y", "[", "t", "]"}], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "HH"], "*", 
-         RowBox[{"x", "[", "t", "]"}], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"x", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "EH"], "*", 
-         RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
-         RowBox[{"(", 
-          RowBox[{"1", " ", "-", " ", 
-           RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "-", 
-        RowBox[{
-         SubscriptBox["\[Mu]", "H"], "*", 
-         RowBox[{"x", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{
-        RowBox[{
-         SubscriptBox["\[CapitalLambda]", "A"], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "HA"], "*", 
-         RowBox[{"x", "[", "t", "]"}], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "AA"], "*", 
-         RowBox[{"y", "[", "t", "]"}], "*", 
-         RowBox[{"(", 
-          RowBox[{"1", "-", 
-           RowBox[{"y", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "EA"], "*", 
-         RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
-         RowBox[{"(", 
-          RowBox[{"1", " ", "-", " ", 
-           RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "-", 
-        RowBox[{
-         SubscriptBox["\[Mu]", "A"], "*", 
-         RowBox[{"y", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{
-        RowBox[{
-         SubscriptBox["\[Gamma]", "A"], "*", 
-         SubscriptBox["\[CapitalLambda]", "A"]}], "+", 
-        RowBox[{
-         SubscriptBox["\[Gamma]", "H"], "*", 
-         SubscriptBox["\[CapitalLambda]", "H"]}], " ", "+", " ", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "AE"], "*", 
-         RowBox[{"y", "[", "t", "]"}]}], " ", "+", " ", 
-        RowBox[{
-         SubscriptBox["\[Beta]", "HE"], " ", "*", " ", 
-         RowBox[{"x", "[", "t", "]"}]}], " ", "-", " ", 
-        RowBox[{
-         SubscriptBox["\[Mu]", 
-          RowBox[{"e", " "}]], "*", 
-         RowBox[{"w", "[", "t", "]"}]}]}]}], "\[IndentingNewLine]", "}"}]}], 
-    ";"}], "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"equilibrium", "[", 
-     RowBox[{
-     "LamH_", ",", "LamA_", ",", "gamH_", ",", "gamA_", ",", "betHH_", ",", 
-      "betAA_", ",", "betAH_", ",", "betEH_", ",", "betHA_", ",", "betEA_", 
-      ",", "betHE_", ",", "betAE_", ",", "muH_", ",", "muA_", ",", "muE_"}], 
-     "]"}], ":=", " ", 
+   RowBox[{"~~", " ", 
     RowBox[{
-     RowBox[{"NSolve", "[", 
+    "3.", " ", "Equilibrium", " ", "analysis", " ", "for", " ", "sensitivity",
+      " ", "analysis"}], " ", "~~"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"parameters", " ", "=", " ", 
+    RowBox[{"Rest", "[", 
+     RowBox[{
+     "Import", "[", 
+      "\"\<M:\\\\New projects\\\\Model env compartment\\\\paramodel.csv\>\"", 
+      "]"}], "]"}]}], ";"}]}]], "Input",
+ CellChangeTimes->{{3.763710562520014*^9, 3.763710562972417*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ODESystemFASTUnbounded", " ", "=", " ", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
       RowBox[{
+       SubscriptBox["\[CapitalLambda]", "H"], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "AH"], "*", 
+       RowBox[{"y", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "HH"], "*", 
+       RowBox[{"x", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "EH"], "*", 
+       RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "-", 
+      RowBox[{
+       SubscriptBox["\[Mu]", "H"], "*", 
+       RowBox[{"x", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[CapitalLambda]", "A"], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "HA"], "*", 
+       RowBox[{"x", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "AA"], "*", 
+       RowBox[{"y", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "EA"], "*", 
+       RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "-", 
+      RowBox[{
+       SubscriptBox["\[Mu]", "A"], "*", 
+       RowBox[{"y", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[Gamma]", "A"], "*", 
+       SubscriptBox["\[CapitalLambda]", "A"]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Gamma]", "H"], "*", 
+       SubscriptBox["\[CapitalLambda]", "H"]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "AE"], "*", 
+       RowBox[{"y", "[", "t", "]"}]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "HE"], " ", "*", " ", 
+       RowBox[{"x", "[", "t", "]"}]}], " ", "-", " ", 
+      RowBox[{
+       SubscriptBox["\[Mu]", 
+        RowBox[{"e", " "}]], "*", 
+       RowBox[{"w", "[", "t", "]"}]}]}]}], "\[IndentingNewLine]", "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"equilibriumUnbounded", "[", 
+   RowBox[{
+   "LamH_", ",", "LamA_", ",", "gamH_", ",", "gamA_", ",", "betHH_", ",", 
+    "betAA_", ",", "betAH_", ",", "betEH_", ",", "betHA_", ",", "betEA_", ",",
+     "betHE_", ",", "betAE_", ",", "muH_", ",", "muA_", ",", "muE_"}], "]"}], 
+  ":=", " ", 
+  RowBox[{
+   RowBox[{"NSolve", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"{", 
        RowBox[{
-        RowBox[{"{", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"ODESystem3", "[", 
-            RowBox[{"[", "1", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
-          RowBox[{
-           RowBox[{"ODESystem3", "[", 
-            RowBox[{"[", "2", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"ODESystem3", "[", 
-             RowBox[{"[", "3", "]"}], "]"}], "\[Equal]", "0"}], " ", "&&", 
-           " ", 
-           RowBox[{
-            RowBox[{"x", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
-           " ", "&&", " ", 
-           RowBox[{
-            RowBox[{"y", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
-           " ", "&&", " ", 
-           RowBox[{
-            RowBox[{"w", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", 
-            "0"}]}]}], "}"}], " ", "/.", 
-        RowBox[{"{", 
-         RowBox[{
-          RowBox[{
-           SubscriptBox["\[CapitalLambda]", "H"], "\[Rule]", "LamH"}], ",", 
-          RowBox[{
-           SubscriptBox["\[CapitalLambda]", "A"], "\[Rule]", "LamA"}], ",", 
-          " ", 
-          RowBox[{
-           SubscriptBox["\[Gamma]", "A"], "\[Rule]", " ", "gamA"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Gamma]", "H"], "\[Rule]", " ", "gamH"}], ",", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "HH"], "\[Rule]", " ", "betHH"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "AA"], "\[Rule]", " ", "betAA"}], ",", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "AH"], "\[Rule]", "betAH"}], ",", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "EH"], " ", "\[Rule]", "betEH"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "HA"], "\[Rule]", "betHA"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "EA"], "\[Rule]", " ", "betEA"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "HE"], " ", "\[Rule]", " ", "betHE"}], ",",
-           " ", 
-          RowBox[{
-           SubscriptBox["\[Beta]", "AE"], " ", "\[Rule]", " ", "betAE"}], ",",
-           " ", 
-          RowBox[{
-           SubscriptBox["\[Mu]", "A"], "\[Rule]", "muA"}], ",", 
-          RowBox[{
-           SubscriptBox["\[Mu]", "H"], "\[Rule]", "muH"}], ",", " ", 
-          RowBox[{
-           SubscriptBox["\[Mu]", "e"], " ", "\[Rule]", " ", "muE"}]}], 
-         "}"}]}], ",", " ", 
-       RowBox[{"{", 
         RowBox[{
-         RowBox[{"x", "[", "t", "]"}], ",", " ", 
-         RowBox[{"y", "[", "t", "]"}], ",", " ", 
-         RowBox[{"w", "[", "t", "]"}]}], "}"}], ",", " ", "Reals"}], "]"}], 
-     "[", 
-     RowBox[{"[", 
-      RowBox[{"1", ",", " ", "1", ",", " ", "2"}], "]"}], 
-     "]"}]}]}]}]], "Input",
+         RowBox[{"ODESystemFASTUnbounded", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
+        RowBox[{
+         RowBox[{"ODESystemFASTUnbounded", "[", 
+          RowBox[{"[", "2", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"ODESystemFASTUnbounded", "[", 
+           RowBox[{"[", "3", "]"}], "]"}], "\[Equal]", "0"}], " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"x", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
+         " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"y", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
+         " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"w", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", 
+          "0"}]}]}], "}"}], " ", "/.", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[CapitalLambda]", "H"], "\[Rule]", "LamH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[CapitalLambda]", "A"], "\[Rule]", "LamA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Gamma]", "A"], "\[Rule]", " ", "gamA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Gamma]", "H"], "\[Rule]", " ", "gamH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HH"], "\[Rule]", " ", "betHH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AA"], "\[Rule]", " ", "betAA"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AH"], "\[Rule]", "betAH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "EH"], " ", "\[Rule]", "betEH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HA"], "\[Rule]", "betHA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "EA"], "\[Rule]", " ", "betEA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HE"], " ", "\[Rule]", " ", "betHE"}], ",", 
+        " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AE"], " ", "\[Rule]", " ", "betAE"}], ",", 
+        " ", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "A"], "\[Rule]", "muA"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "H"], "\[Rule]", "muH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "e"], " ", "\[Rule]", " ", "muE"}]}], "}"}]}], 
+     ",", " ", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"x", "[", "t", "]"}], ",", " ", 
+       RowBox[{"y", "[", "t", "]"}], ",", " ", 
+       RowBox[{"w", "[", "t", "]"}]}], "}"}], ",", " ", "Reals"}], "]"}], "[", 
+   RowBox[{"[", 
+    RowBox[{"1", ",", " ", "1", ",", " ", "2"}], "]"}], "]"}]}]}], "Input",
  CellChangeTimes->{{3.760351719037163*^9, 3.7603517763158903`*^9}, {
    3.7603518204633045`*^9, 3.7603518232925873`*^9}, {3.7603518728135386`*^9, 
    3.7603521229843493`*^9}, 3.760352179850035*^9, {3.760352274734523*^9, 
-   3.760352274780527*^9}, {3.7603523266717157`*^9, 3.760352429219364*^9}}],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{
-  RowBox[{"parameters", " ", "=", " ", 
-   RowBox[{"Rest", "[", 
-    RowBox[{
-    "Import", "[", 
-     "\"\<M:\\\\New projects\\\\Model env compartment\\\\paramodel.csv\>\"", 
-     "]"}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.7603521875148015`*^9, 3.7603522054665966`*^9}, {
-   3.760352236047654*^9, 3.7603522659806476`*^9}, 3.760352437315174*^9, {
-   3.760352504244866*^9, 3.760352506549096*^9}, {3.760352541717613*^9, 
-   3.760352599848426*^9}, 3.7637049559629383`*^9}],
-
-Cell[BoxData[
- InterpretationBox[
-  TagBox[
-   FrameBox[GridBox[{
-      {
-       ItemBox[
-        TagBox[
-         RowBox[{"{", 
-          RowBox[{
-           RowBox[{"{", 
-            RowBox[{
-            "1", ",", "0.996401308614954`", ",", "0.992257360959553`", ",", 
-             "0.00982318271121038`", ",", "0.986368593238735`", ",", 
-             "0.983315158124219`", ",", "0.017681728880163`", ",", 
-             "0.979825517993366`", ",", "0.977748691099464`", ",", 
-             "0.975899672846142`", ",", "0.025196335078542`", ",", 
-             "0.0263904034897367`", ",", "0.973477406679735`", ",", 
-             "0.0271596858638672`", ",", "0.0276990185387994`", ",", 
-             "0.0275058840864473`"}], "}"}], ",", 
-           TemplateBox[{"9169"},
-            "OutputSizeLimit`Skeleton",
-            DisplayFunction->(FrameBox[
-              RowBox[{"\" \[CenterEllipsis]\"", #, "\"\[CenterEllipsis] \""}],
-               Background -> GrayLevel[0.75], 
-              BaseStyle -> {
-               "Deploy", FontColor -> GrayLevel[1], FontSize -> Smaller, 
-                ShowStringCharacters -> False}, BaselinePosition -> Baseline, 
-              ContentPadding -> False, FrameMargins -> 1, FrameStyle -> 
-              GrayLevel[0.75], RoundingRadius -> 7]& )], ",", 
-           RowBox[{"{", 
-            RowBox[{
-            "9171", ",", "0.0035986913850457`", ",", "0.00774263904044707`", 
-             ",", "0.99017681728879`", ",", "0.0136314067612652`", ",", 
-             "0.0166848418757814`", ",", "0.982318271119837`", ",", 
-             "0.0201744820066336`", ",", "0.0222513089005359`", ",", 
-             "0.0241003271538585`", ",", "0.974803664921458`", ",", 
-             "0.973609596510263`", ",", "0.0265225933202646`", ",", 
-             "0.972840314136133`", ",", "0.9723009814612`", ",", 
-             "0.972495115913553`"}], "}"}]}], "}"}],
-         Short[#, 5]& ],
-        BaseStyle->{Deployed -> False},
-        StripOnInput->False]},
-      {GridBox[{
-         {
-          TagBox[
-           TooltipBox[
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource[
-                "FEStrings", "sizeBriefExplanation"], StandardForm],
-               ImageSizeCache->{72., {3., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarCategory",
-             StripOnInput->False],
-            StyleBox[
-             DynamicBox[
-              ToBoxes[
-               FEPrivate`FrontEndResource["FEStrings", "sizeExplanation"], 
-               StandardForm]], DynamicUpdating -> True, StripOnInput -> 
-             False]],
-           Annotation[#, 
-            Style[
-             Dynamic[
-              FEPrivate`FrontEndResource["FEStrings", "sizeExplanation"]], 
-             DynamicUpdating -> True], "Tooltip"]& ], 
-          ButtonBox[
-           PaneSelectorBox[{False->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowLess"], 
-                StandardForm],
-               ImageSizeCache->{59., {1., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControl",
-             StripOnInput->False], True->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowLess"], 
-                StandardForm]],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControlActive",
-             StripOnInput->False]}, Dynamic[
-             CurrentValue["MouseOver"]],
-            Alignment->Center,
-            FrameMargins->0,
-            ImageSize->{Automatic, 25}],
-           Appearance->None,
-           
-           ButtonFunction:>OutputSizeLimit`ButtonFunction[
-            Identity, 68, 27100471076256655638, 5/2],
-           Enabled->True,
-           Evaluator->Automatic,
-           Method->"Queued"], 
-          ButtonBox[
-           PaneSelectorBox[{False->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowMore"], 
-                StandardForm],
-               ImageSizeCache->{68., {1., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControl",
-             StripOnInput->False], True->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowMore"], 
-                StandardForm]],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControlActive",
-             StripOnInput->False]}, Dynamic[
-             CurrentValue["MouseOver"]],
-            Alignment->Center,
-            FrameMargins->0,
-            ImageSize->{Automatic, 25}],
-           Appearance->None,
-           
-           ButtonFunction:>OutputSizeLimit`ButtonFunction[
-            Identity, 68, 27100471076256655638, 5 2],
-           Enabled->True,
-           Evaluator->Automatic,
-           Method->"Queued"], 
-          ButtonBox[
-           PaneSelectorBox[{False->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowAll"], 
-                StandardForm],
-               ImageSizeCache->{51., {1., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControl",
-             StripOnInput->False], True->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeShowAll"], 
-                StandardForm]],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControlActive",
-             StripOnInput->False]}, Dynamic[
-             CurrentValue["MouseOver"]],
-            Alignment->Center,
-            FrameMargins->0,
-            ImageSize->{Automatic, 25}],
-           Appearance->None,
-           
-           ButtonFunction:>OutputSizeLimit`ButtonFunction[
-            Identity, 68, 27100471076256655638, Infinity],
-           Enabled->True,
-           Evaluator->Automatic,
-           Method->"Queued"], 
-          ButtonBox[
-           PaneSelectorBox[{False->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeChangeLimit"], 
-                StandardForm],
-               ImageSizeCache->{90., {1., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControl",
-             StripOnInput->False], True->
-            StyleBox[
-             StyleBox[
-              DynamicBox[ToBoxes[
-                FEPrivate`FrontEndResource["FEStrings", "sizeChangeLimit"], 
-                StandardForm],
-               ImageSizeCache->{90., {1., 10.}}],
-              StripOnInput->False,
-              DynamicUpdating->True], "SuggestionsBarControlActive",
-             StripOnInput->False]}, Dynamic[
-             CurrentValue["MouseOver"]],
-            Alignment->Center,
-            FrameMargins->0,
-            ImageSize->{Automatic, 25}],
-           Appearance->None,
-           ButtonFunction:>FrontEndExecute[{
-              FrontEnd`SetOptions[
-              FrontEnd`$FrontEnd, 
-               FrontEnd`PreferencesSettings -> {"Page" -> "Evaluation"}], 
-              FrontEnd`FrontEndToken["PreferencesDialog"]}],
-           Evaluator->None,
-           Method->"Preemptive"]}
-        },
-        AutoDelete->False,
-        FrameStyle->GrayLevel[0.85],
-        GridBoxDividers->{"Columns" -> {False, {True}}},
-        GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
-        GridBoxSpacings->{"Columns" -> {{2}}}]}
-     },
-     DefaultBaseStyle->"Column",
-     GridBoxAlignment->{
-      "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
-       "RowsIndexed" -> {}},
-     GridBoxDividers->{
-      "Columns" -> {{False}}, "ColumnsIndexed" -> {}, "Rows" -> {{False}}, 
-       "RowsIndexed" -> {}},
-     GridBoxItemSize->{
-      "Columns" -> {{Automatic}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
-       "RowsIndexed" -> {}},
-     GridBoxSpacings->{"Columns" -> {
-         Offset[0.27999999999999997`], {
-          Offset[0.5599999999999999]}, 
-         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
-         Offset[0.2], 
-         Offset[1.2], {
-          Offset[0.4]}, 
-         Offset[0.2]}, "RowsIndexed" -> {}}],
-    Background->RGBColor[0.9657, 0.9753, 0.9802],
-    FrameMargins->{{12, 12}, {0, 15}},
-    FrameStyle->GrayLevel[0.85],
-    RoundingRadius->5,
-    StripOnInput->False],
-   Deploy,
-   DefaultBaseStyle->"Deploy"],
-  Out[68]]], "Output",
- CellChangeTimes->{3.7603592931232777`*^9}]
-}, Open  ]],
+   3.760352274780527*^9}, {3.7603523266717157`*^9, 3.760352429219364*^9}, {
+   3.763710056415265*^9, 3.7637100612855277`*^9}, {3.763710516963707*^9, 
+   3.7637105239323597`*^9}, {3.763710561129605*^9, 3.763710565233833*^9}}],
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"eqanalysis", " ", "=", " ", 
+  RowBox[{"eqanalysisUnbounded", " ", "=", " ", 
    RowBox[{"Table", "[", 
     RowBox[{
-     RowBox[{"equilibrium", "[", 
+     RowBox[{"equilibriumUnbounded", "[", 
       RowBox[{
        RowBox[{"parameters", "[", 
         RowBox[{"[", 
@@ -10526,29 +10295,245 @@ Cell[BoxData[
        RowBox[{"Length", "[", "parameters", "]"}]}], "}"}]}], "]"}]}], 
   ";"}]], "Input",
  CellChangeTimes->{{3.7603526268821287`*^9, 3.7603528191855545`*^9}, {
-  3.7603528550101366`*^9, 3.760352884930128*^9}, {3.7603529711579475`*^9, 
-  3.760352974874319*^9}, {3.7603534412031794`*^9, 3.760353480472324*^9}, {
-  3.760354146753894*^9, 3.760354156266894*^9}}],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{"Dimensions", "[", "eqanalysis", "]"}]], "Input",
- CellChangeTimes->{{3.760354087068894*^9, 3.760354088451894*^9}, {
-  3.760354131787894*^9, 3.7603541358358936`*^9}}],
-
-Cell[BoxData[
- RowBox[{"{", "9171", "}"}]], "Output",
- CellChangeTimes->{3.760354136937894*^9}]
-}, Open  ]],
+   3.7603528550101366`*^9, 3.760352884930128*^9}, {3.7603529711579475`*^9, 
+   3.760352974874319*^9}, {3.7603534412031794`*^9, 3.760353480472324*^9}, {
+   3.760354146753894*^9, 3.760354156266894*^9}, 3.76371088649759*^9}],
 
 Cell[BoxData[
  RowBox[{
   RowBox[{"Export", "[", 
    RowBox[{
-   "\"\<M:\\\\New projects\\\\Model env compartment\\\\outcomeequilibrium.csv\
-\>\"", ",", " ", "eqanalysis"}], "]"}], ";"}]], "Input",
- CellChangeTimes->{{3.7603596511538734`*^9, 3.7603596535841165`*^9}}]
+   "\"\<M:\\\\New projects\\\\Model env \
+compartment\\\\outcomeequilibriumUnbounded.csv\>\"", ",", " ", 
+    "eqanalysisUnbounded"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.7603596511538734`*^9, 3.7603596535841165`*^9}, {
+  3.763710904490885*^9, 3.763710910482317*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"ODESystemFASTBounded", " ", "=", " ", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[CapitalLambda]", "H"], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "AH"], "*", 
+       RowBox[{"y", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "HH"], "*", 
+       RowBox[{"x", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "EH"], "*", 
+       RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"x", "[", "t", "]"}]}], ")"}]}], "-", 
+      RowBox[{
+       SubscriptBox["\[Mu]", "H"], "*", 
+       RowBox[{"x", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[CapitalLambda]", "A"], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "HA"], "*", 
+       RowBox[{"x", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "+", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "AA"], "*", 
+       RowBox[{"y", "[", "t", "]"}], "*", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], " ", "+", " ", 
+      RowBox[{
+       SubscriptBox["\[Beta]", "EA"], "*", 
+       RowBox[{"w", "[", "t", "]"}], " ", "*", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"y", "[", "t", "]"}]}], ")"}]}], "-", 
+      RowBox[{
+       SubscriptBox["\[Mu]", "A"], "*", 
+       RowBox[{"y", "[", "t", "]"}]}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{"w", "[", "t", "]"}]}], ")"}], " ", "*", " ", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SubscriptBox["\[Gamma]", "A"], "*", 
+          SubscriptBox["\[CapitalLambda]", "A"]}], "+", 
+         RowBox[{
+          SubscriptBox["\[Gamma]", "H"], "*", 
+          SubscriptBox["\[CapitalLambda]", "H"]}], " ", "+", " ", 
+         RowBox[{
+          SubscriptBox["\[Beta]", "AE"], "*", 
+          RowBox[{"y", "[", "t", "]"}]}], " ", "+", " ", 
+         RowBox[{
+          SubscriptBox["\[Beta]", "HE"], " ", "*", " ", 
+          RowBox[{"x", "[", "t", "]"}]}]}], ")"}]}], " ", "-", " ", 
+      RowBox[{
+       SubscriptBox["\[Mu]", 
+        RowBox[{"e", " "}]], "*", 
+       RowBox[{"w", "[", "t", "]"}]}]}]}], "\[IndentingNewLine]", "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"equilibriumBounded", "[", 
+   RowBox[{
+   "LamH_", ",", "LamA_", ",", "gamH_", ",", "gamA_", ",", "betHH_", ",", 
+    "betAA_", ",", "betAH_", ",", "betEH_", ",", "betHA_", ",", "betEA_", ",",
+     "betHE_", ",", "betAE_", ",", "muH_", ",", "muA_", ",", "muE_"}], "]"}], 
+  ":=", " ", 
+  RowBox[{
+   RowBox[{"NSolve", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"ODESystemFASTBounded", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
+        RowBox[{
+         RowBox[{"ODESystemFASTBounded", "[", 
+          RowBox[{"[", "2", "]"}], "]"}], "\[Equal]", "0"}], ",", " ", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"ODESystemFASTBounded", "[", 
+           RowBox[{"[", "3", "]"}], "]"}], "\[Equal]", "0"}], " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"x", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
+         " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"y", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", "0"}], 
+         " ", "&&", " ", 
+         RowBox[{
+          RowBox[{"w", "[", "t", "]"}], " ", "\[GreaterEqual]", " ", 
+          "0"}]}]}], "}"}], " ", "/.", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[CapitalLambda]", "H"], "\[Rule]", "LamH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[CapitalLambda]", "A"], "\[Rule]", "LamA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Gamma]", "A"], "\[Rule]", " ", "gamA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Gamma]", "H"], "\[Rule]", " ", "gamH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HH"], "\[Rule]", " ", "betHH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AA"], "\[Rule]", " ", "betAA"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AH"], "\[Rule]", "betAH"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "EH"], " ", "\[Rule]", "betEH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HA"], "\[Rule]", "betHA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "EA"], "\[Rule]", " ", "betEA"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "HE"], " ", "\[Rule]", " ", "betHE"}], ",", 
+        " ", 
+        RowBox[{
+         SubscriptBox["\[Beta]", "AE"], " ", "\[Rule]", " ", "betAE"}], ",", 
+        " ", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "A"], "\[Rule]", "muA"}], ",", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "H"], "\[Rule]", "muH"}], ",", " ", 
+        RowBox[{
+         SubscriptBox["\[Mu]", "e"], " ", "\[Rule]", " ", "muE"}]}], "}"}]}], 
+     ",", " ", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"x", "[", "t", "]"}], ",", " ", 
+       RowBox[{"y", "[", "t", "]"}], ",", " ", 
+       RowBox[{"w", "[", "t", "]"}]}], "}"}], ",", " ", "Reals"}], "]"}], "[", 
+   RowBox[{"[", 
+    RowBox[{"1", ",", " ", "1", ",", " ", "2"}], "]"}], "]"}]}]}], "Input",
+ CellChangeTimes->{{3.763710934934864*^9, 3.7637109352634764`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eqanalysisBounded", " ", "=", " ", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"equilibriumBounded", "[", 
+      RowBox[{
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "2"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "3"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "4"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "5"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "6"}], "]"}], "]"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "7"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "8"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "9"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "10"}], "]"}], "]"}], ",", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "11"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "12"}], "]"}], "]"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "13"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "14"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", " ", "15"}], "]"}], "]"}], ",", " ", 
+       RowBox[{"parameters", "[", 
+        RowBox[{"[", 
+         RowBox[{"x", ",", "16"}], "]"}], "]"}]}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", " ", "1", ",", " ", 
+       RowBox[{"Length", "[", "parameters", "]"}]}], "}"}]}], "]"}]}], 
+  ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+   "\"\<M:\\\\New projects\\\\Model env \
+compartment\\\\outcomeequilibriumBounded.csv\>\"", ",", " ", 
+    "eqanalysisBounded"}], "]"}], ";"}]], "Input"]
 },
 WindowSize->{784, 968},
 WindowMargins->{{0, Automatic}, {Automatic, 2}},
@@ -10613,17 +10598,13 @@ Cell[CellGroupData[{
 Cell[331650, 7319, 1680, 37, 93, "Input"],
 Cell[333333, 7358, 125547, 2703, 140, "Output"]
 }, Open  ]],
-Cell[458895, 10064, 6452, 164, 333, "Input"],
-Cell[CellGroupData[{
-Cell[465372, 10232, 505, 11, 53, "Input"],
-Cell[465880, 10245, 8910, 221, 210, "Output"]
-}, Open  ]],
-Cell[474805, 10469, 2453, 61, 153, "Input"],
-Cell[CellGroupData[{
-Cell[477283, 10534, 189, 3, 32, "Input"],
-Cell[477475, 10539, 95, 2, 33, "Output"]
-}, Open  ]],
-Cell[477585, 10544, 267, 6, 53, "Input"]
+Cell[458895, 10064, 524, 14, 73, "Input"],
+Cell[459422, 10080, 6146, 156, 313, "Input"],
+Cell[465571, 10238, 2495, 61, 153, "Input"],
+Cell[468069, 10301, 339, 8, 106, "Input"],
+Cell[468411, 10311, 5970, 157, 313, "Input"],
+Cell[474384, 10470, 2198, 57, 153, "Input"],
+Cell[476585, 10529, 216, 6, 53, "Input"]
 }
 ]
 *)
