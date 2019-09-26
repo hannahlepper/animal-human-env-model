@@ -131,7 +131,6 @@ p6 = Plots.plot(an_hum_env_sol[[1,2],:]', line = (2, styles),
           label = [:RH, :RA],
           title = "High environment, high impact",
           yaxis = ("", (0, 1.0), (0:0.1:1.0)))
-
 # get Rh*
 function run_mod(p)
   prob = ODEProblem(an_hum_env, u0, tspan, p)
