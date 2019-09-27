@@ -1,5 +1,7 @@
 using DifferentialEquations
 using Distributions
+using CSV
+using Tables
 
 # model function
 function unboundeds(du, u, p, t)
@@ -57,12 +59,54 @@ end
 p = p_initial[keep, :]
 
 #now solve for each parameter set
-dat = zeros(size(p)[1], 16)
+dat = zeros(size(p)[1])
 @time for i in 1:size(p)[1]
-  dat[i, 1:15] .= p[i,:]
   prob = ODEProblem(unboundeds, u0, tspan, p[i,:])
   sol = solve(prob)
-  dat[i,16] = sol(500)[1]
+  dat[i] = sol(500)[1]
 end
 
-dat
+#Find number of runs where 0.65 < RH < 0.75
+n_target = zeros(size(p)[1])
+for i in 1:size(p)[1]
+    if dat[i] < 0.75 && dat[i] < 0.65
+        n_target[i] = 1
+    else
+        n_target[i] = 0
+    end
+end
+
+#Bins for parameters
+maximum(p[:,11]) #too big - not interesting this high up in the range
+lower_bin = [0.:0.2:1.8;]
+
+#get βEH and μE combinations
+βEHμE = zeros(100,2)
+βEHμE[:,1] = repeat(lower_bin; outer=10)
+βEHμE[:,2] = repeat(lower_bin; inner=10)
+
+#get indexes of p rows where this is true and calculate %
+perc_target = []
+for i in 1:100
+    #go through the parameter combinations first
+    indexes_i = []
+    for j in 1:size(p)[1]
+        #go through each parameter set
+        if p[j,11] > βEHμE[i,1] && p[j,11] <  βEHμE[i,1] + 0.2
+            if p[j,15] > βEHμE[i,2] && p[j,15] < βEHμE[i,2] + 0.2
+                push!(indexes_i, j)
+            end
+        end
+    end
+    if any(n_target[indexes_i] .> 0)
+        sum_success = sum(n_target[indexes_i])
+        perc = sum_success/size(indexes_i)[1]
+        push!(perc_target, perc)
+    else
+        push!(perc_target, 0)
+    end
+end
+
+db = Tables.table(hcat(βEHμE, perc_target))
+
+CSV.write("betEHmuEresults.csv",db)
