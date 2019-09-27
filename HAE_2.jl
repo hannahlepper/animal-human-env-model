@@ -1,7 +1,6 @@
 using DifferentialEquations
 using Distributions
-using CSV
-using Tables
+
 
 # model function
 function unboundeds(du, u, p, t)
@@ -86,27 +85,31 @@ lower_bin = [0.:0.2:1.8;]
 βEHμE[:,2] = repeat(lower_bin; inner=10)
 
 #get indexes of p rows where this is true and calculate %
-perc_target = []
-for i in 1:100
-    #go through the parameter combinations first
-    indexes_i = []
-    for j in 1:size(p)[1]
-        #go through each parameter set
-        if p[j,11] > βEHμE[i,1] && p[j,11] <  βEHμE[i,1] + 0.2
-            if p[j,15] > βEHμE[i,2] && p[j,15] < βEHμE[i,2] + 0.2
-                push!(indexes_i, j)
+perc_target = zeros(10, 10)
+#bEH - columns
+for i in 1:10
+    #muE - rows
+    for j in 1:10
+        indexes_i = []
+        for k in 1:size(p)[1]
+            #go through each parameter set
+            if p[k,11] > lower_bin[i] && p[k,11] <  lower_bin[i] + 0.2 #bEH, starting low
+                if p[k,15] > lower_bin[j] && p[k,15] < lower_bin[j] + 0.2 #muE, startin low
+                    push!(indexes_i, k)
+                end
             end
         end
-    end
-    if any(n_target[indexes_i] .> 0)
-        sum_success = sum(n_target[indexes_i])
-        perc = sum_success/size(indexes_i)[1]
-        push!(perc_target, perc)
-    else
-        push!(perc_target, 0)
+        if any(n_target[indexes_i] .> 0)
+            sum_success = sum(n_target[indexes_i])
+            perc = sum_success/size(indexes_i)[1]
+            perc_target[j,i] = perc
+        else
+            perc_target[j,i] = 0
+        end
     end
 end
 
-db = Tables.table(hcat(βEHμE, perc_target))
-
-CSV.write("betEHmuEresults.csv",db)
+#plotting!
+Using Plots
+plotly()
+heatmap(lower_bin, lower_bin, perc_target)
