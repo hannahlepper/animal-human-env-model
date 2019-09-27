@@ -1,5 +1,9 @@
 using DifferentialEquations
 using Distributions
+using Plots
+plotly()
+using CSV
+using Tables
 
 
 # model function
@@ -11,19 +15,11 @@ function unboundeds(du, u, p, t)
     du[3] = γH*ΛH + γA*ΛA + βAE*RA + βHE*RH - μE*RE
 end
 
-#dummy run to show functionality
-p = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-u0 = [0.0;0.0;0.0]
-tspan=(0.0,500.0)
-prob = ODEProblem(unboundeds,u0,tspan,p)
-@time sol = solve(prob)
-sol(500)
-
 #sample paramter space
-N = 1000
-σ = 1
+N = 1000000
+σ = 1.
 #parameters of interest are bEH, LH, muE, muH.
-p_initial = zeros(1000, 15)
+p_initial = zeros(N, 15)
 #Specify most probably value of LamH, then get lognormal distribution
 MPΛH = 0.1
 p_initial[:,1] .= rand(LogNormal(log(MPΛH)+σ, σ), N)
@@ -47,17 +43,17 @@ p_initial[:,[9,10,12]] .= 0.14
 
 #get rid of negative numbers, or values over 1? leave this out for now
 keep=[]
-@time for i in 1:1000
+@time for i in 1:N
     if !(any(p_initial[i,:] .< 0.))
-        #if !(any(p_initial[i,:] .> 1.))
+        if !(any(p_initial[i,:] .> 1.5))
             push!(keep, i)
-        #end
+        end
     end
 end
 
 p = p_initial[keep, :]
 
-#now solve for each parameter set
+#now numerically solve for each parameter set
 dat = zeros(size(p)[1])
 @time for i in 1:size(p)[1]
   prob = ODEProblem(unboundeds, u0, tspan, p[i,:])
@@ -76,40 +72,48 @@ for i in 1:size(p)[1]
 end
 
 #Bins for parameters
-maximum(p[:,11]) #too big - not interesting this high up in the range
-lower_bin = [0.:0.2:1.8;]
+maximum(p[:,11])
+lower_bin = [0.:0.01:1.;]
 
 #get βEH and μE combinations
-βEHμE = zeros(100,2)
-βEHμE[:,1] = repeat(lower_bin; outer=10)
-βEHμE[:,2] = repeat(lower_bin; inner=10)
+βEHμE = zeros(10201,2)
+βEHμE[:,1] = repeat(lower_bin; outer=101)
+βEHμE[:,2] = repeat(lower_bin; inner=101)
 
 #get indexes of p rows where this is true and calculate %
-perc_target = zeros(10, 10)
-#bEH - columns
-for i in 1:10
-    #muE - rows
-    for j in 1:10
-        indexes_i = []
-        for k in 1:size(p)[1]
-            #go through each parameter set
-            if p[k,11] > lower_bin[i] && p[k,11] <  lower_bin[i] + 0.2 #bEH, starting low
-                if p[k,15] > lower_bin[j] && p[k,15] < lower_bin[j] + 0.2 #muE, startin low
-                    push!(indexes_i, k)
+nd
+
+function get_perc_target(bins, binsize, p, dat, p1, p2)
+    dims_out = size(bins)[1]
+    dims_in = size(dat)[1]
+    perc_target = zeros(dims_out, dims_out)
+    for i in 1:dims_out
+        for j in 1:dims_out
+            sum_success=0
+            n_sets=0
+            for k in 1:dims_in
+                if p[k,p1] > lower_bin[i] && p[k,p1] <  lower_bin[i] + binsize #bEH, starting low
+                    if p[k,p2] > lower_bin[j] && p[k,p2] < lower_bin[j] + binsize #muE, startin low
+                        n_sets += 1
+                        sum_success += n_target[k]
+                    end
                 end
             end
-        end
-        if any(n_target[indexes_i] .> 0)
-            sum_success = sum(n_target[indexes_i])
-            perc = sum_success/size(indexes_i)[1]
-            perc_target[j,i] = perc
-        else
-            perc_target[j,i] = 0
+            perc_target[j,i] = ifelse(sum_success > 0 && n_sets > 0, sum_success/n_sets, 0)
         end
     end
+    return perc_target
 end
+@time βEHμE_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 15)
+@time βEHμH_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 13)
+@time βEHΛH_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 1)
 
 #plotting!
-Using Plots
-plotly()
-heatmap(lower_bin, lower_bin, perc_target)
+heatmap(lower_bin, lower_bin, βEHμE_mat)
+heatmap(lower_bin, lower_bin, βEHΛH_mat)
+heatmap(lower_bin, lower_bin, βEHΛH_mat)
+
+#Put into CSVs so I don't have to run again unless I want to
+CSV.write("M:/Project folders/Model env compartment/bEHmE.csv", Tables.table(βEHμE_mat))
+CSV.write("M:/Project folders/Model env compartment/bEHmH.csv", Tables.table(βEHμH_mat))
+CSV.write("M:/Project folders/Model env compartment/bEHLH.csv", Tables.table(βEHΛH_mat))
