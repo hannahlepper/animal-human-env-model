@@ -15,6 +15,15 @@ function unboundeds(du, u, p, t)
     du[3] = γH*ΛH + γA*ΛA + βAE*RA + βHE*RH - μE*RE
 end
 
+#check is working - us the same as the mathematica output to 6 decimal places at least
+u0 = [0.0; 0.0; 0.0]
+tspan = (0.0, 500.)
+p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.001, 0.1, 0.1, 0.01, 0.01, 0.1, 0.1, 0.1, 0.2]
+prob = ODEProblem(unboundeds, u0, tspan, p)
+sol = solve(prob)
+plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
+sol(500)
+
 #sample paramter space
 N = 1000000
 σ = 1.
@@ -41,7 +50,7 @@ p_initial[:,[3,4,5,6,7,8]] .= 0.001
 #βEA, βAE, βHE
 p_initial[:,[9,10,12]] .= 0.14
 
-#get rid of negative numbers, or values over 1? leave this out for now
+#get rid of negative numbers, or values over 1.5
 keep=[]
 @time for i in 1:N
     if !(any(p_initial[i,:] .< 0.))
