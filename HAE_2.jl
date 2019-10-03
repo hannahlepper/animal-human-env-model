@@ -25,7 +25,7 @@ plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
 sol(500)
 
 #sample paramter space
-N = 1000000
+N = 2000000
 σ = 1.
 #parameters of interest are bEH, LH, muE, muH.
 p_initial = zeros(N, 15)
@@ -55,7 +55,9 @@ keep=[]
 @time for i in 1:N
     if !(any(p_initial[i,:] .< 0.))
         if !(any(p_initial[i,:] .> 1.5))
-            push!(keep, i)
+            if !(p_initial[i,13] > 1.)
+                push!(keep, i)
+            end
         end
     end
 end
@@ -73,7 +75,7 @@ end
 #Find number of runs where 0.65 < RH < 0.75
 n_target = zeros(size(p)[1])
 for i in 1:size(p)[1]
-    if dat[i] < 0.75 && dat[i] < 0.65
+    if 0.65 < dat[i] < 0.75
         n_target[i] = 1
     else
         n_target[i] = 0
@@ -82,16 +84,15 @@ end
 
 #Bins for parameters
 maximum(p[:,11])
-lower_bin = [0.:0.01:1.;]
+lower_bin = [0.:0.05:1;]
+bin_N = size(lower_bin)[1]
 
 #get βEH and μE combinations
-βEHμE = zeros(10201,2)
-βEHμE[:,1] = repeat(lower_bin; outer=101)
-βEHμE[:,2] = repeat(lower_bin; inner=101)
+βEHμE = zeros(bin_N^2,2)
+βEHμE[:,1] = repeat(lower_bin; outer=bin_N)
+βEHμE[:,2] = repeat(lower_bin; inner=bin_N)
 
 #get indexes of p rows where this is true and calculate %
-nd
-
 function get_perc_target(bins, binsize, p, dat, p1, p2)
     dims_out = size(bins)[1]
     dims_in = size(dat)[1]
@@ -104,7 +105,7 @@ function get_perc_target(bins, binsize, p, dat, p1, p2)
                 if p[k,p1] > lower_bin[i] && p[k,p1] <  lower_bin[i] + binsize #bEH, starting low
                     if p[k,p2] > lower_bin[j] && p[k,p2] < lower_bin[j] + binsize #muE, startin low
                         n_sets += 1
-                        sum_success += n_target[k]
+                        sum_success += dat[k]
                     end
                 end
             end
@@ -113,14 +114,37 @@ function get_perc_target(bins, binsize, p, dat, p1, p2)
     end
     return perc_target
 end
-@time βEHμE_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 15)
-@time βEHμH_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 13)
-@time βEHΛH_mat = get_perc_target(lower_bin,0.01,p, n_target, 11, 1)
+#run on small thing first
+get_perc_target(lower_bin, 0.05, p[1:100,:], n_target[1:100],1,2)
+
+@time βEHμE_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 15)
+@time βEHμH_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 13)
+@time βEHΛH_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 1)
 
 #plotting!
-heatmap(lower_bin, lower_bin, βEHμE_mat)
-heatmap(lower_bin, lower_bin, βEHΛH_mat)
-heatmap(lower_bin, lower_bin, βEHΛH_mat)
+using ORCA
+plotlyjs()
+p1 = heatmap(lower_bin, lower_bin, βEHμE_mat, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "μE",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p1.o,
+        "M:/Project folders/Model env compartment/Plots/bEHmuEheat.svg")
+p2 = heatmap(lower_bin, lower_bin, βEHμH_mat, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "μH",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p2.o,
+        "M:/Project folders/Model env compartment/Plots/bEHmuHheat.svg")
+p3 = heatmap(lower_bin, lower_bin, βEHΛH_mat, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "ΛH",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p3.o,
+        "M:/Project folders/Model env compartment/Plots/bEHLHheat.svg")
 
 #Put into CSVs so I don't have to run again unless I want to
 CSV.write("M:/Project folders/Model env compartment/bEHmE.csv", Tables.table(βEHμE_mat))
