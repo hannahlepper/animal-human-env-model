@@ -102,8 +102,8 @@ function get_perc_target(bins, binsize, p, dat, p1, p2)
             sum_success=0
             n_sets=0
             for k in 1:dims_in
-                if p[k,p1] > lower_bin[i] && p[k,p1] <  lower_bin[i] + binsize #bEH, starting low
-                    if p[k,p2] > lower_bin[j] && p[k,p2] < lower_bin[j] + binsize #muE, startin low
+                if p[k,p1] > lower_bin[i] && p[k,p1] <  lower_bin[i] + binsize #bEH
+                    if p[k,p2] > lower_bin[j] && p[k,p2] < lower_bin[j] + binsize #muE
                         n_sets += 1
                         sum_success += dat[k]
                     end
@@ -117,9 +117,11 @@ end
 #run on small thing first
 get_perc_target(lower_bin, 0.05, p[1:100,:], n_target[1:100],1,2)
 
-@time βEHμE_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 15)
-@time βEHμH_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 13)
-@time βEHΛH_mat = get_perc_target(lower_bin,0.05,p, n_target, 11, 1)
+
+# Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
+@time βEHμE_mat = get_perc_target(lower_bin,0.05, p, n_target, 11, 15)
+@time βEHμH_mat = get_perc_target(lower_bin,0.05, p, n_target, 11, 13)
+@time βEHΛH_mat = get_perc_target(lower_bin,0.05, p, n_target, 11, 1)
 
 #plotting!
 using ORCA
@@ -150,3 +152,55 @@ PlotlyJS.savefig(p3.o,
 CSV.write("M:/Project folders/Model env compartment/bEHmE.csv", Tables.table(βEHμE_mat))
 CSV.write("M:/Project folders/Model env compartment/bEHmH.csv", Tables.table(βEHμH_mat))
 CSV.write("M:/Project folders/Model env compartment/bEHLH.csv", Tables.table(βEHΛH_mat))
+
+
+#Conclusions 2: impact of reducing LA is low for parameter combinations of interest
+p[:,2] .= 0
+dat_int = zeros(size(p)[1])
+@time for i in 1:size(p)[1]
+  prob = ODEProblem(unboundeds, u0, tspan, p[i,:])
+  sol = solve(prob)
+  dat_int[i] = sol(500)[1]
+end
+
+impact = zeros(size(p)[1])
+@time for i in 1:size(p)[1]
+    if !(dat[i]==0)
+        if dat[i] > dat_int[i]
+            impact[i] = (1 - dat_int[i]/dat[i])
+        end
+    end
+end
+
+n_lowimpact = zeros(size(p)[1])
+@time for i in 1:size(p)[1]
+    if impact[i] < 0.02
+        n_lowimpact[i] = 1
+    end
+end
+
+@time βEHμE_low_impact = get_perc_target(lower_bin,0.05, p, n_lowimpact, 11, 15)
+@time βEHμH_low_impact = get_perc_target(lower_bin,0.05, p, n_lowimpact, 11, 13)
+@time βEHΛH_low_impact = get_perc_target(lower_bin,0.05, p, n_lowimpact, 11, 1)
+
+p4 = heatmap(lower_bin, lower_bin, βEHμE_low_impact, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "μE",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p4.o,
+        "M:/Project folders/Model env compartment/Plots/bEHmuEheat2.svg")
+p5 = heatmap(lower_bin, lower_bin, βEHμH_low_impact, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "μH",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p5.o,
+        "M:/Project folders/Model env compartment/Plots/bEHmuHheat2.svg")
+p6 = heatmap(lower_bin, lower_bin, βEHΛH_low_impact, fillcolor = :fire,
+        xlabel = "βEH",
+        ylabel = "ΛH",
+        xticks = range(0.,stop =1.5, length = 16),
+        yticks = range(0.,stop =1.5, length = 16))
+PlotlyJS.savefig(p6.o,
+        "M:/Project folders/Model env compartment/Plots/bEHLHheat2.svg")
