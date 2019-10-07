@@ -1,7 +1,6 @@
 using DifferentialEquations
 using Distributions
 using Plots
-plotly()
 using CSV
 using Tables
 
@@ -21,6 +20,7 @@ tspan = (0.0, 500.)
 p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.001, 0.1, 0.1, 0.01, 0.01, 0.1, 0.1, 0.1, 0.2]
 prob = ODEProblem(unboundeds, u0, tspan, p)
 sol = solve(prob)
+plotly()
 plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
 sol(500)
 
@@ -29,18 +29,28 @@ N = 2000000
 σ = 1.
 #parameters of interest are bEH, LH, muE, muH.
 p_initial = zeros(N, 15)
-#Specify most probably value of LamH, then get lognormal distribution
-MPΛH = 0.1
-p_initial[:,1] .= rand(LogNormal(log(MPΛH)+σ, σ), N)
 
+#use log-normal for the environmental parameters - should explore possibility they are high
 MPβEH = 0.14
-p_initial[:,11].= rand(LogNormal(log(MPβEH)+σ,σ), N)
+p_initial[:,11].= rand(LogNormal(log(MPβEH),σ), N)
 
 MPμE = 0.2
-p_initial[:,15] .= rand(LogNormal(log(MPμE)+σ, σ), N)
+p_initial[:,15] .= rand(LogNormal(log(MPμE), σ), N)
 
-MPμH = 0.1
-p_initial[:,13] .= rand(LogNormal(log(MPμH)+σ, σ), N)
+#use beta dist with mean 0.1 and var 0.1 for the human parameters, which I think are less likely to be >1
+μH_mean = 0.1
+min_var = μH_mean * (1 - μH_mean)
+μH_var = min_var - 0.001
+#needs to be less than min above for the equations below to work. Assumes one mode, no antimode.
+α_beta = ((1 - μH_mean)/μH_var^2 - 1/μH_mean) * μH_mean^2
+β_beta = α_beta * (1/μH_mean - 1)
+p_initial[:,13] .= rand(Beta(α_beta, β_beta), N)
+p_initial[:,1] .= rand(Beta(α_beta, β_beta), N)
+
+histogram(p_initial[:,[1,11,13,15]],
+          xticks = range(0, 1.5; step =0.1),
+          xlims = (0.0, 1.5),
+          label = ["ΛH" "βEH" "μH" "μE"])
 
 #Rest of the parameters, on tha basis of the
 #ΛA and μA
@@ -55,7 +65,7 @@ keep=[]
 @time for i in 1:N
     if !(any(p_initial[i,:] .< 0.))
         if !(any(p_initial[i,:] .> 1.5))
-            if !(p_initial[i,13] > 1.)
+            if !(p_initial[i,13] > 1.) #no big values of μH
                 push!(keep, i)
             end
         end
