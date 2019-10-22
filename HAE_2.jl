@@ -23,50 +23,83 @@ sol = solve(prob)
 plotlyjs()
 plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
 
-#sample paramter space
+#sample paramter space - for all transmission scenarios.
+#Make a little library for the distributions and parameters for the 4 varying parameters
+#assume will always use lognormal for now...
+struct lnp
+    σ::Float64
+    μ::Float64
+end
+
+struct ts
+    B
+    H
+    E
+    A
+end
+
+struct vp
+    βEH::ts
+    ΛH::lnp
+    μE::lnp
+    μH::lnp
+end
+
+σ=1.
+pv = vp(ts(lnp(σ, 0.01), lnp(σ, 0.001),
+            lnp(σ, 0.14), lnp(σ, 0.001)), #βEH
+          lnp(σ, 0.1), #ΛH
+          lnp(σ, 0.2), #μE
+          lnp(σ, 0.1)) #μH
+
+#non varying parameters
+struct f_p
+    ΛA::Float64
+    γH::Float64
+    γA::Float64
+    βHH::ts
+    βAA::ts
+    βHA::ts
+    βAH::ts
+    βAE::ts
+    βEA::ts
+    βHE::ts
+    μA::Float64
+end
+
+pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
+         ts(0.1,0.2,0.001,0.001), #βHH
+         ts(0.1,0.001,0.001,0.2), #βAA
+         ts(0.001,0.2,0.001,0.001), #βHA
+         ts(0.1,0.001,0.001,0.2), #βAH
+         ts(0.1, 0.001, 0.14, 0.2), #βAE
+         ts(0.01, 0.001, 0.14, 0.001), #βEA
+         ts(0.1, 0.2, 0.14, 0.001), #βHE
+         0.1) #μA
+
+#set up parameter set for the first
 N = 2000000
-σ = 1.
-#parameters of interest are bEH, LH, muE, muH.
 p_initial = zeros(N, 15)
 
-# #use log-normal for the environmental parameters - should explore possibility they are high
-# MPβEH = 0.14
-# p_initial[:,11].= rand(LogNormal(log(MPβEH),σ), N)
-# MPμE = 0.2
-# p_initial[:,15] .= rand(LogNormal(log(MPμE), σ), N)
-# #use beta dist with mean 0.1 and var 0.1 for the human parameters, which I think are less likely to be >1
-# μH_mean = 0.1
-# min_var = μH_mean * (1 - μH_mean)
-# μH_var = min_var - 0.001
-# #needs to be less than min above for the equations below to work. Assumes one mode, no antimode.
-# α_beta = ((1 - μH_mean)/μH_var^2 - 1/μH_mean) * μH_mean^2
-# β_beta = α_beta * (1/μH_mean - 1)
-# p_initial[:,13] .= rand(Beta(α_beta, β_beta), N)
-# p_initial[:,1] .= rand(Beta(α_beta, β_beta), N)
-
-#Alternative
-σ = 1.
-MPΛH = 0.1
-p_initial[:,1] .= rand(LogNormal(log(MPΛH)+σ, σ), N)
-MPβEH = 0.14
-p_initial[:,11].= rand(LogNormal(log(MPβEH)+σ,σ), N)
-MPμE = 0.2
-p_initial[:,15] .= rand(LogNormal(log(MPμE)+σ, σ), N)
-MPμH = 0.1
-p_initial[:,13] .= rand(LogNormal(log(MPμH)+σ, σ), N)
+p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
+p_initial[:,11].= rand(LogNormal(log(pv.βEH.E.μ)+pv.βEH.E.σ, pv.βEH.E.σ), N)
+p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
+p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
 
 histogram(p_initial[:,[1,11,13,15]],
           xticks = range(0, 1.5; step =0.1),
           xlims = (0.0, 1.5),
           label = ["ΛH" "βEH" "μH" "μE"])
 
-#Rest of the parameters, on tha basis of the
+#Rest of the parameters
 #ΛA and μA
-p_initial[:,[2,14]] .= 0.1
+#ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βHE, μA
+p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]
 #γH, γA, βHH, βAA, βHA, βAH
 p_initial[:,[3,4,5,6,7,8]] .= 0.001
 #βEA, βAE, βHE
 p_initial[:,[9,10,12]] .= 0.14
+
 
 #get rid of negative numbers, or values over 1.5
 function keep_ps(p)
