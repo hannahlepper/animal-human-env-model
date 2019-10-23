@@ -82,7 +82,8 @@ N = 2000000
 p_initial = zeros(N, 15)
 
 p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
-p_initial[:,11].= rand(LogNormal(log(pv.βEH.E.μ)+pv.βEH.E.σ, pv.βEH.E.σ), N)
+#p_initial[:,11].= rand(LogNormal(log(pv.βEH.E.μ)+pv.βEH.E.σ, pv.βEH.E.σ), N)
+p_initial[:,11] .= rand(Uniform(0.0000001, 1.),N)
 p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
 p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
 
@@ -146,12 +147,14 @@ function model_run(p, mod)
 
 end
 model_run(p[1:5,:], unboundeds) #short run to get the function going
-dat = model_run(p, unboundeds)
+
+p[:,1] .= rand(Uniform(0.0000001, 1.), size(p)[1])
+dat_ΛH = model_run(p, unboundeds)
 
 #Find number of runs where 0.65 < RH < 0.75
 n_target = zeros(size(p)[1])
 for i in 1:size(p)[1]
-    if 0.65 < dat[i,2] < 0.75
+    if 0.65 < dat_ΛH[i,2] < 0.75
         n_target[i] = 1
     else
         n_target[i] = 0
