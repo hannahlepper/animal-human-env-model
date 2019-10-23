@@ -92,14 +92,10 @@ histogram(p_initial[:,[1,11,13,15]],
           label = ["ΛH" "βEH" "μH" "μE"])
 
 #Rest of the parameters
-#ΛA and μA
 #ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βHE, μA
-p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]
-#γH, γA, βHH, βAA, βHA, βAH
-p_initial[:,[3,4,5,6,7,8]] .= 0.001
-#βEA, βAE, βHE
-p_initial[:,[9,10,12]] .= 0.14
-
+p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]'
+#βHH, βAA, βHA, βAH, βAE, βEA, βHE
+p_initial[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).E for x in [4,5,6,7,8,9,10]]'
 
 #get rid of negative numbers, or values over 1.5
 function keep_ps(p)
@@ -123,7 +119,6 @@ histogram(p[:,[1,11,13,15]],
           label = ["ΛH" "βEH" "μH" "μE"])
 
 #now numerically solve for each parameter set
-
 #function for running model
 function model_run(p, mod)
     dat = zeros(size(p)[1],2)
@@ -150,7 +145,7 @@ function model_run(p, mod)
     return dat
 
 end
-model_run(p[:,1:5], unboundeds) #short run to get the function going
+model_run(p[1:5,:], unboundeds) #short run to get the function going
 dat = model_run(p, unboundeds)
 
 #Find number of runs where 0.65 < RH < 0.75
@@ -194,7 +189,7 @@ function get_perc_target(bins, binsize, p, dat, p1, p2)
     end
     return perc_target
 end
-#run on small thing first
+#run on small thing to get function ready
 get_perc_target(lower_bin, 0.05, p[1:100,:], n_target[1:100],1,2)
 
 
