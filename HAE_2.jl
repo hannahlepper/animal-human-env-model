@@ -405,3 +405,82 @@ p33 = ph(impact_βEHΛH_A, "βEH","ΛH")
 p34 = ph(impact_βEHμE_E, "βEH","μE")
 p35 = ph(impact_βEHμH_E, "βEH","μH")
 p36 = ph(impact_βEHΛH_E, "βEH","ΛH")
+
+impact_βEHΛH_E_var = bin_var(impact_E, lower_bin, p_E, 1, 11)
+impact_βEHμH_E_var = bin_var(impact_E, lower_bin, p_E, 1, 13)
+impact_βEHμE_E_var = bin_var(impact_E, lower_bin, p_E, 1, 15)
+
+impact_βEHΛH_H_var = bin_var(impact_H, lower_bin, p_H, 1, 11)
+impact_βEHμH_H_var = bin_var(impact_H, lower_bin, p_H, 1, 13)
+impact_βEHμE_H_var = bin_var(impact_H, lower_bin, p_H, 1, 15)
+
+impact_βEHΛH_A_var = bin_var(impact_A, lower_bin, p_A, 1, 11)
+impact_βEHμH_A_var = bin_var(impact_A, lower_bin, p_A, 1, 13)
+impact_βEHμE_A_var = bin_var(impact_A, lower_bin, p_A, 1, 15)
+
+impact_βEHΛH_B_var = bin_var(impact_B, lower_bin, p_B, 1, 11)
+impact_βEHμH_B_var = bin_var(impact_B, lower_bin, p_B, 1, 13)
+impact_βEHμE_B_var = bin_var(impact_B, lower_bin, p_B, 1, 15)
+
+p37 = ph(impact_βEHμE_B_var, "βEH","μE")
+p38 = ph(impact_βEHμH_B_var, "βEH","μH")
+p39 = ph(impact_βEHΛH_B_var, "βEH","ΛH")
+p40 = ph(impact_βEHμE_H_var, "βEH","μE")
+p41 = ph(impact_βEHμH_H_var, "βEH","μH")
+p42 = ph(impact_βEHΛH_H_var, "βEH","ΛH")
+p43 = ph(impact_βEHμE_A_var, "βEH","μE")
+p44 = ph(impact_βEHμH_A_var, "βEH","μH")
+p45 = ph(impact_βEHΛH_A_var, "βEH","ΛH")
+p46 = ph(impact_βEHμE_E_var, "βEH","μE")
+p47 = ph(impact_βEHμH_E_var, "βEH","μH")
+p48 = ph(impact_βEHΛH_E_var, "βEH","ΛH")
+
+#And now recreate plots with varying ΛA
+#1. change initial values of ΛA
+p_E[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_B[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_H[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_A[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+
+#2. Re-run models
+dat_E_2 = model_run(p_E, unboundeds)
+dat_B_2 = model_run(p_B, unboundeds)
+dat_H_2 = model_run(p_H, unboundeds)
+dat_A_2 = model_run(p_A, unboundeds)
+
+#3. get impact and summarise for parameter bins
+impact_E_2 = [ifelse(!(dat_E_2[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
+                   1 - dat_E_noLA[i]/dat_E_2[i], #will get %decrease and %increase here, will maybe cut out later
+                   0) for i in 1:size(p_E)[1]]
+impact_B_2 = [ifelse(!(dat_B_2[i]==0.),
+                  1 - dat_B_noLA[i]/dat_B_2[i],
+                  0) for i in 1:size(p_E)[1]]
+impact_H_2 = [ifelse(!(dat_H_2[i]==0.),
+                 1 - dat_H_noLA[i]/dat_H_2[i],
+                 0) for i in 1:size(p_E)[1]]
+impact_A_2 = [ifelse(!(dat_A_2[i]==0.),
+                1 - dat_A_noLA[i]/dat_A_2[i],
+                0) for i in 1:size(p_E)[1]]
+
+impact_βEHΛA_E = bin_av(impact_E, lower_bin, p_E, 1, 2)
+impact_βEHΛA_H = bin_av(impact_H, lower_bin, p_H, 1, 2)
+impact_βEHΛA_A = bin_av(impact_A, lower_bin, p_A, 1, 2)
+impact_βEHΛA_B = bin_av(impact_B, lower_bin, p_B, 1, 2)
+
+impact_βEHΛA_E_var = bin_var(impact_E, lower_bin, p_E, 1, 2)
+impact_βEHΛA_H_var = bin_var(impact_H, lower_bin, p_H, 1, 2)
+impact_βEHΛA_A_var = bin_var(impact_A, lower_bin, p_A, 1, 2)
+impact_βEHΛA_B_var = bin_var(impact_B, lower_bin, p_B, 1, 2)
+
+#4. plot
+p49 = ph(impact_βEHΛA_B, "βEH","ΛA")
+p50 = ph(impact_βEHΛA_H, "βEH","ΛA")
+p51 = ph(impact_βEHΛA_A, "βEH","ΛA")
+p52 = ph(impact_βEHΛA_E, "βEH","ΛA")
+
+impact_impact_βEHΛA = plot(p49, p50, p51, p52, layout = (4,1), colorbar = false)
+
+p53 = ph(impact_βEHΛA_B_var, "βEH","ΛA")
+p54 = ph(impact_βEHΛA_H_var, "βEH","ΛA")
+p55 = ph(impact_βEHΛA_A_var, "βEH","ΛA")
+p56 = ph(impact_βEHΛA_E_var, "βEH","ΛA")
