@@ -3,7 +3,8 @@ using Distributions
 using Plots
 using CSV
 using Tables
-using ORCA #needed for plotlyjs
+
+using RCall
 
 # model function
 function unboundeds(du, u, p, t)
@@ -105,7 +106,6 @@ p_initial_H[:,11] .= rand(Uniform(0.000001, 1.), N)
 p_initial_A[:,11] .= rand(Uniform(0.000001, 1.), N)
 p_initial_E[:,11] .= rand(Uniform(0.000001, 1.), N)
 
-
 #Parameters that are fixed
 #βHH, βAA, βHA, βAH, βAE, βEA, βHE
 p_initial_B[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).B for x in [4,5,6,7,8,9,10]]'
@@ -161,8 +161,8 @@ function model_run(p, mod)
     end
 
     #rerun for those possibly not at equilibrium
-    tspan = (0.,2000.)
-    for i in re_run
+    tspan = (0.,10000.)
+    @time for i in re_run
         prob = ODEProblem(mod, u0, tspan, p[i,:])
         sol = solve(prob)
         dat[i, :] .= Array{Float64,1}(map(n -> sol(n)[1], [1900,2000]))
@@ -186,92 +186,56 @@ n_target_E = [ifelse(0.65 < dat_E[i,2] <0.75, 1, 0) for i in 1:size(p_E)[1]]
 lower_bin = [0.:0.05:1;]
 bin_N = size(lower_bin)[1]
 
-#get indexes of p rows where this is true and calculate %
-function get_perc_target(bins, binsize, p, dat, p1, p2)
-    dims_out = size(bins)[1]
-    dims_in = size(dat)[1]
-    perc_target = zeros(dims_out, dims_out)
-    for i in 1:dims_out
-        for j in 1:dims_out
-            sum_success=0
-            n_sets=0
-            for k in 1:dims_in
-                if p[k,p1] > lower_bin[i] && p[k,p1] <  lower_bin[i] + binsize #bEH
-                    if p[k,p2] > lower_bin[j] && p[k,p2] < lower_bin[j] + binsize #muE
-                        n_sets += 1
-                        sum_success += dat[k]
-                    end
-                end
-            end
-            perc_target[j,i] = ifelse(sum_success > 0 && n_sets > 0, sum_success/n_sets, 0)
-        end
-    end
-    return perc_target
-end
-#run on small thing to get function ready
-get_perc_target(lower_bin, 0.05, p_E[1:100,:], n_target[1:100],1,2)
+#Using RCall to get % reaching target
+R"""
+source("M:/Project\ folders\\/Model\ env\ compartment\\/Scipts\\/RGetPercAndPlot.R")
+"""
 
+@rput lower_bin p_E p_A p_B p_H n_target_A n_target_B n_target_E n_target_H
 
 # Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
-@time βEHμE_mat_E = get_perc_target(lower_bin,0.05, p_E, n_target, 11, 15)
-@time βEHμH_mat_E = get_perc_target(lower_bin,0.05, p_E, n_target, 11, 13)
-@time βEHΛH_mat_E = get_perc_target(lower_bin,0.05, p_E, n_target, 11, 1)
+R"""
+bEHmuE_df_E = get_perc_target(lower_bin, p_E[, c(11, 15)], n_target_E)
+bEHmuH_df_E = get_perc_target(lower_bin, p_E[, c(11, 13)], n_target_E)
+bEHLH_df_E = get_perc_target(lower_bin, p_E[, c(11, 1)], n_target_E)
 
-@time βEHμE_mat_B = get_perc_target(lower_bin,0.05, p_B, n_target, 11, 15)
-@time βEHμH_mat_B = get_perc_target(lower_bin,0.05, p_B, n_target, 11, 13)
-@time βEHΛH_mat_B = get_perc_target(lower_bin,0.05, p_B, n_target, 11, 1)
+bEHmuE_df_B = get_perc_target(lower_bin, p_B[, c(11, 15)], n_target_B)
+bEHmuH_df_B = get_perc_target(lower_bin, p_B[, c(11, 13)], n_target_B)
+bEHLH_df_B = get_perc_target(lower_bin, p_B[, c(11, 1)], n_target_B)
 
-@time βEHμE_mat_H = get_perc_target(lower_bin,0.05, p_H, n_target, 11, 15)
-@time βEHμH_mat_H = get_perc_target(lower_bin,0.05, p_H, n_target, 11, 13)
-@time βEHΛH_mat_H = get_perc_target(lower_bin,0.05, p_H, n_target, 11, 1)
+bEHmuE_df_A = get_perc_target(lower_bin, p_A[, c(11, 15)], n_target_A)
+bEHmuH_df_A = get_perc_target(lower_bin, p_A[, c(11, 13)], n_target_A)
+bEHLH_df_A = get_perc_target(lower_bin, p_A[, c(11, 1)], n_target_A)
 
-@time βEHμE_mat_A = get_perc_target(lower_bin,0.05, p_A, n_target, 11, 15)
-@time βEHμH_mat_A = get_perc_target(lower_bin,0.05, p_A, n_target, 11, 13)
-@time βEHΛH_mat_A = get_perc_target(lower_bin,0.05, p_A, n_target, 11, 1)
-
+bEHmuE_df_H = get_perc_target(lower_bin, p_H[, c(11, 15)], n_target_H)
+bEHmuH_df_H = get_perc_target(lower_bin, p_H[, c(11, 13)], n_target_H)
+bEHLH_df_H = get_perc_target(lower_bin, p_H[, c(11, 1)], n_target_H)
+"""
 
 #plotting!
-#Env
-function ph(mat, x, y)
-    heatmap(lower_bin, lower_bin, mat, fillcolor = :fire,
-            xlabel = x, ylabel = y)
-end
+R"""
+p1 = plot_heatmap(bEHmuE_df_E, c('bEH', 'muE'), '% Target Achieved, ts = E', '')
+p2 = plot_heatmap(bEHmuH_df_E, c('bEH', 'muH'), '% Target Achieved, ts = E', '')
+p3 = plot_heatmap(bEHLH_df_E, c('bEH', 'LH'), '% Target Achieved, ts = E', '')
 
-p1 = ph(βEHμE_mat_E, "βEH", "μE")
-p2 = ph(βEHΛH_mat_E, "βEH", "ΛH")
-p3 = ph(βEHμH_mat_E, "βEH", "μH")
+p4 = plot_heatmap(bEHmuE_df_B, c('bEH', 'muE'), '% Target Achieved, ts = B', '')
+p5 = plot_heatmap(bEHmuH_df_B, c('bEH', 'muH'), '% Target Achieved, ts = B', '')
+p6 = plot_heatmap(bEHLH_df_B, c('bEH', 'LH'), '% Target Achieved, ts = B', '')
 
-#Base
-p4 = ph(βEHμE_mat_B, "βEH", "μE")
-p5 = ph(βEHΛH_mat_B, "βEH", "ΛH")
-p6 = ph(βEHμH_mat_B, "βEH", "μH")
+p7 = plot_heatmap(bEHmuE_df_H, c('bEH', 'muE'), '% Target Achieved, ts = H', '')
+p8 = plot_heatmap(bEHmuH_df_H, c('bEH', 'muH'), '% Target Achieved, ts = H', '')
+p9 = plot_heatmap(bEHLH_df_H, c('bEH', 'LH'), '% Target Achieved, ts = H', '')
 
-#Human
-p7 = ph(βEHμE_mat_H, "βEH", "μE")
-p8 = ph(βEHΛH_mat_H, "βEH", "ΛH")
-p9 = ph(βEHμH_mat_H, "βEH", "μH")
+p10 = plot_heatmap(bEHmuE_df_A, c('bEH', 'muE'), '% Target Achieved, ts = A', '')
+p11 = plot_heatmap(bEHmuH_df_A, c('bEH', 'muH'), '% Target Achieved, ts = A', '')
+p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '')
+"""
 
-#Animal
-p10 = ph(βEHμE_mat_A, "βEH","μE")
-p11 = ph(βEHμH_mat_A, "βEH","ΛH")
-p12 = ph(βEHΛH_mat_A, "βEH","μH")
-
-p_bEH_target = plot(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,layout = (4,3))
-
-#none of this is working but I want to move on
-PlotlyJS.savefig(p1.o, "M:/Project folders/Model env compartment/Plots/EbEHmuEheat.svg")
-PlotlyJS.savefig(p2.o, "M:/Project folders/Model env compartment/Plots/EbEHmuHheat.svg")
-PlotlyJS.savefig(p3.o, "M:/Project folders/Model env compartment/Plots/EbEHLHheat.svg")
-plotlyjs()
-pgfplots()
-savefig(p_bEH_target, "M:/Project folders/Model env compartment/Plots/bEHTargetheat.svg")
-p_bEH_target.o
-
-#Put into CSVs so I don't have to run again unless I want to
-CSV.write("M:/Project folders/Model env compartment/bEHmE.csv", Tables.table(βEHμE_mat))
-CSV.write("M:/Project folders/Model env compartment/bEHmH.csv", Tables.table(βEHμH_mat))
-CSV.write("M:/Project folders/Model env compartment/bEHLH.csv", Tables.table(βEHΛH_mat))
-
+R"""
+svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=12, width = 20)
+ptaplot <- grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12, nrow = 4, ncol = 3)
+dev.off()
+"""
 
 #Conclusions 2: impact of reducing LA is low for parameter combinations of interest
 #I think I should do this for human transmission scenario and then the animal transmission scenario - best and worst chance to have an impact
@@ -312,128 +276,114 @@ n_lowimpact_A = [ifelse(0. < impact_A[i] < 0.02,
                         1,
                         0) for i in 1:size(p_A)[1]]
 
-@time βEHμE_low_impact_B = get_perc_target(lower_bin,0.05, p_B, n_lowimpact_B, 11, 15)
-@time βEHμH_low_impact_B = get_perc_target(lower_bin,0.05, p_B, n_lowimpact_B, 11, 13)
-@time βEHΛH_low_impact_B = get_perc_target(lower_bin,0.05, p_B, n_lowimpact_B, 11, 1)
+@rput impact_E impact_B impact_A impact_H n_lowimpact_E n_lowimpact_B n_lowimpact_A n_lowimpact_H
+R"""
+bEHmuE_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 15)], n_lowimpact_E)
+bEHmuH_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 13)], n_lowimpact_E)
+bEHLH_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 1)], n_lowimpact_E)
 
-@time βEHμE_low_impact_H = get_perc_target(lower_bin,0.05, p_H, n_lowimpact_H, 11, 15)
-@time βEHμH_low_impact_H = get_perc_target(lower_bin,0.05, p_H, n_lowimpact_H, 11, 13)
-@time βEHΛH_low_impact_H = get_perc_target(lower_bin,0.05, p_H, n_lowimpact_H, 11, 1)
+bEHmuE_df_B_low_impact = get_perc_target(lower_bin, p_B[, c(11, 15)], n_lowimpact_B)
+bEHmuH_df_B_low_impact = get_perc_target(lower_bin, p_B[, c(11, 13)], n_lowimpact_B)
+bEHLH_df_B_low_impact = get_perc_target(lower_bin, p_B[, c(11, 1)], n_lowimpact_B)
 
-@time βEHμE_low_impact_A = get_perc_target(lower_bin,0.05, p_A, n_lowimpact_A, 11, 15)
-@time βEHμH_low_impact_A = get_perc_target(lower_bin,0.05, p_A, n_lowimpact_A, 11, 13)
-@time βEHΛH_low_impact_A = get_perc_target(lower_bin,0.05, p_A, n_lowimpact_A, 11, 1)
+bEHmuE_df_A_low_impact = get_perc_target(lower_bin, p_A[, c(11, 15)], n_lowimpact_A)
+bEHmuH_df_A_low_impact = get_perc_target(lower_bin, p_A[, c(11, 13)], n_lowimpact_A)
+bEHLH_df_A_low_impact = get_perc_target(lower_bin, p_A[, c(11, 1)], n_lowimpact_A)
 
-@time βEHμE_low_impact_E = get_perc_target(lower_bin,0.05, p_E, n_lowimpact_E, 11, 15)
-@time βEHμH_low_impact_E = get_perc_target(lower_bin,0.05, p_E, n_lowimpact_E, 11, 13)
-@time βEHΛH_low_impact_E = get_perc_target(lower_bin,0.05, p_E, n_lowimpact_E, 11, 1)
+bEHmuE_df_H_low_impact = get_perc_target(lower_bin, p_H[, c(11, 15)], n_lowimpact_H)
+bEHmuH_df_H_low_impact = get_perc_target(lower_bin, p_H[, c(11, 13)], n_lowimpact_H)
+bEHLH_df_H_low_impact = get_perc_target(lower_bin, p_H[, c(11, 1)], n_lowimpact_H)
+"""
 
-p13 = ph(βEHμE_low_impact_B, "βEH","μE")
-p14 = ph(βEHμH_low_impact_B, "βEH","μH")
-p15 = ph(βEHΛH_low_impact_B, "βEH","ΛH")
-p16 = ph(βEHμE_low_impact_H, "βEH","μE")
-p17 = ph(βEHμH_low_impact_H, "βEH","μH")
-p18 = ph(βEHΛH_low_impact_H, "βEH","ΛH")
-p19 = ph(βEHμE_low_impact_A, "βEH","μE")
-p20 = ph(βEHμH_low_impact_A, "βEH","μH")
-p21 = ph(βEHΛH_low_impact_A, "βEH","ΛH")
-p22 = ph(βEHμE_low_impact_E, "βEH","μE")
-p23 = ph(βEHμH_low_impact_E, "βEH","μH")
-p24 = ph(βEHΛH_low_impact_E, "βEH","ΛH")
+R"""
+p13 = plot_heatmap(bEHmuE_df_E_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = E', '')
+p14 = plot_heatmap(bEHmuH_df_E_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = E', '')
+p15 = plot_heatmap(bEHLH_df_E_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = E', '')
 
-βEH_low_impact = plot(p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, layout = (4,3))
+p16 = plot_heatmap(bEHmuE_df_B_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = B', '')
+p17 = plot_heatmap(bEHmuH_df_B_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = B', '')
+p18 = plot_heatmap(bEHLH_df_B_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = B', '')
 
+p19 = plot_heatmap(bEHmuE_df_H_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = H', '')
+p20 = plot_heatmap(bEHmuH_df_H_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = H', '')
+p21 = plot_heatmap(bEHLH_df_H_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = H', '')
 
+p22 = plot_heatmap(bEHmuE_df_A_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = A', '')
+p23 = plot_heatmap(bEHmuH_df_A_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = A', '')
+p24 = plot_heatmap(bEHLH_df_A_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = A', '')
+"""
 
-PlotlyJS.savefig(p4.o,
-        "M:/Project folders/Model env compartment/Plots/bEHmuEheat2.svg")
+R"""
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=12, width = 20)
+liplot = grid.arrange(p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,nrow = 4, ncol = 3)
+dev.off()
+"""
 
-PlotlyJS.savefig(p5.o,
-        "M:/Project folders/Model env compartment/Plots/bEHmuHheat2.svg")
-
-PlotlyJS.savefig(p6.o,
-        "M:/Project folders/Model env compartment/Plots/bEHLHheat2.svg")
 
 #Final conclusion - increasing βEH in many cases reduces the impacts of increased LH
-# need function for averaging the bins
+R"""
+bEHmuE_df_E_impact = get_mean_var(lower_bin, p_E[, c(11, 15)], impact_E)
+bEHmuH_df_E_impact = get_mean_var(lower_bin, p_E[, c(11, 13)], impact_E)
+bEHLH_df_E_impact = get_mean_var(lower_bin, p_E[, c(11, 1)], impact_E)
 
-function bin_av(dat, lower_bin, p, rows, cols)
-    #1. make array indicating the position of parameters in rows and cols of final matrix.
-    #Bear in mind, in this function, all values higher than 1.0 go in the final bin.
-    row_bin_index = [findlast(p[i,rows] .> lower_bin) for i in 1:size(p)[1]]
-    col_bin_index = [findlast(p[i,cols] .> lower_bin) for i in 1:size(p)[1]]
-    #2. make the matrix
-    mat = [mean(dat[findall((row_bin_index.==r) .& (col_bin_index.==c))]) for r in 1:size(lower_bin)[1], c in 1:size(lower_bin)[1]]
-    return mat
-end
+bEHmuE_df_B_impact = get_mean_var(lower_bin, p_B[, c(11, 15)], impact_B)
+bEHmuH_df_B_impact = get_mean_var(lower_bin, p_B[, c(11, 13)], impact_B)
+bEHLH_df_B_impact = get_mean_var(lower_bin, p_B[, c(11, 1)], impact_B)
 
-function bin_var(dat, lower_bin, p, rows, cols)
-    #1. make array indicating the position of parameters in rows and cols of final matrix.
-    #Bear in mind, in this function, all values higher than 1.0 go in the final bin.
-    row_bin_index = [findlast(p[i,rows] .> lower_bin) for i in 1:size(p)[1]]
-    col_bin_index = [findlast(p[i,cols] .> lower_bin) for i in 1:size(p)[1]]
-    #2. make the matrix
-    mat = [var(dat[findall((row_bin_index.==r) .& (col_bin_index.==c))]) for r in 1:size(lower_bin)[1], c in 1:size(lower_bin)[1]]
-    return mat
-end
+bEHmuE_df_A_impact = get_mean_var(lower_bin, p_A[, c(11, 15)], impact_A)
+bEHmuH_df_A_impact = get_mean_var(lower_bin, p_A[, c(11, 13)], impact_A)
+bEHLH_df_A_impact = get_mean_var(lower_bin, p_A[, c(11, 1)], impact_A)
 
-impact_βEHΛH_E = bin_av(impact_E, lower_bin, p_E, 1, 11)
-impact_βEHμH_E = bin_av(impact_E, lower_bin, p_E, 1, 13)
-impact_βEHμE_E = bin_av(impact_E, lower_bin, p_E, 1, 15)
+bEHmuE_df_H_impact = get_mean_var(lower_bin, p_H[, c(11, 15)], impact_H)
+bEHmuH_df_H_impact = get_mean_var(lower_bin, p_H[, c(11, 13)], impact_H)
+bEHLH_df_H_impact = get_mean_var(lower_bin, p_H[, c(11, 1)], impact_H)
+"""
 
-impact_βEHΛH_H = bin_av(impact_H, lower_bin, p_H, 1, 11)
-impact_βEHμH_H = bin_av(impact_H, lower_bin, p_H, 1, 13)
-impact_βEHμE_H = bin_av(impact_H, lower_bin, p_H, 1, 15)
+R"""
+p25_1 = plot_heatmap(bEHmuE_df_E_impact, c('bEH', 'muE'), 'Mean impact, ts = E', '')
+p25 = plot_heatmap(bEHmuH_df_E_impact, c('bEH', 'muH'), 'Mean impact, ts = E', '')
+p26 = plot_heatmap(bEHLH_df_E_impact, c('bEH', 'LH'), 'Mean impact, ts = E', '')
 
-impact_βEHΛH_A = bin_av(impact_A, lower_bin, p_A, 1, 11)
-impact_βEHμH_A = bin_av(impact_A, lower_bin, p_A, 1, 13)
-impact_βEHμE_A = bin_av(impact_A, lower_bin, p_A, 1, 15)
+p27 = plot_heatmap(bEHmuE_df_B_impact, c('bEH', 'muE'), 'Mean impact, ts = B', '')
+p28 = plot_heatmap(bEHmuH_df_B_impact, c('bEH', 'muH'), 'Mean impact, ts = B', '')
+p29 = plot_heatmap(bEHLH_df_B_impact, c('bEH', 'LH'), 'Mean impact, ts = B', '')
 
-impact_βEHΛH_B = bin_av(impact_B, lower_bin, p_B, 1, 11)
-impact_βEHμH_B = bin_av(impact_B, lower_bin, p_B, 1, 13)
-impact_βEHμE_B = bin_av(impact_B, lower_bin, p_B, 1, 15)
+p30 = plot_heatmap(bEHmuE_df_H_impact, c('bEH', 'muE'), 'Mean impact, ts = H', '')
+p31 = plot_heatmap(bEHmuH_df_H_impact, c('bEH', 'muH'), 'Mean impact, ts = H', '')
+p32 = plot_heatmap(bEHLH_df_H_impact, c('bEH', 'LH'), 'Mean impact, ts = H', '')
 
-p25 = ph(impact_βEHμE_B, "βEH","μE")
-p26 = ph(impact_βEHμH_B, "βEH","μH")
-p27 = ph(impact_βEHΛH_B, "βEH","ΛH")
-p28 = ph(impact_βEHμE_H, "βEH","μE")
-p29 = ph(impact_βEHμH_H, "βEH","μH")
-p30 = ph(impact_βEHΛH_H, "βEH","ΛH")
-p31 = ph(impact_βEHμE_A, "βEH","μE")
-p32 = ph(impact_βEHμH_A, "βEH","μH")
-p33 = ph(impact_βEHΛH_A, "βEH","ΛH")
-p34 = ph(impact_βEHμE_E, "βEH","μE")
-p35 = ph(impact_βEHμH_E, "βEH","μH")
-p36 = ph(impact_βEHΛH_E, "βEH","ΛH")
+p33 = plot_heatmap(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Mean impact, ts = A', '')
+p34 = plot_heatmap(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Mean impact, ts = A', '')
+p35 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '')
+"""
 
-impact_βEHΛH_E_var = bin_var(impact_E, lower_bin, p_E, 1, 11)
-impact_βEHμH_E_var = bin_var(impact_E, lower_bin, p_E, 1, 13)
-impact_βEHμE_E_var = bin_var(impact_E, lower_bin, p_E, 1, 15)
+R"""
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
+miplot = grid.arrange(p25_1,p25,p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,nrow=4,ncol=3)
+dev.off()
+"""
 
-impact_βEHΛH_H_var = bin_var(impact_H, lower_bin, p_H, 1, 11)
-impact_βEHμH_H_var = bin_var(impact_H, lower_bin, p_H, 1, 13)
-impact_βEHμE_H_var = bin_var(impact_H, lower_bin, p_H, 1, 15)
+R"""
+p36 = plot_heatmap_var(bEHmuH_df_E_impact, c('bEH', 'muH'), 'Impact variance, ts = E', '')
+p37 = plot_heatmap_var(bEHmuH_df_E_impact, c('bEH', 'muH'), 'Impact variance, ts = E', '')
+p38 = plot_heatmap_var(bEHLH_df_E_impact, c('bEH', 'LH'), 'Impact variance, ts = E', '')
 
-impact_βEHΛH_A_var = bin_var(impact_A, lower_bin, p_A, 1, 11)
-impact_βEHμH_A_var = bin_var(impact_A, lower_bin, p_A, 1, 13)
-impact_βEHμE_A_var = bin_var(impact_A, lower_bin, p_A, 1, 15)
+p39 = plot_heatmap_var(bEHmuE_df_B_impact, c('bEH', 'muE'), 'Impact variance, ts = B', '')
+p40 = plot_heatmap_var(bEHmuH_df_B_impact, c('bEH', 'muH'), 'Impact variance, ts = B', '')
+p41 = plot_heatmap_var(bEHLH_df_B_impact, c('bEH', 'LH'), 'Impact variance, ts = B', '')
 
-impact_βEHΛH_B_var = bin_var(impact_B, lower_bin, p_B, 1, 11)
-impact_βEHμH_B_var = bin_var(impact_B, lower_bin, p_B, 1, 13)
-impact_βEHμE_B_var = bin_var(impact_B, lower_bin, p_B, 1, 15)
+p42 = plot_heatmap_var(bEHmuE_df_H_impact, c('bEH', 'muE'), 'Impact variance, ts = H', '')
+p43 = plot_heatmap_var(bEHmuH_df_H_impact, c('bEH', 'muH'), 'Impact variance, ts = H', '')
+p44 = plot_heatmap_var(bEHLH_df_H_impact, c('bEH', 'LH'), 'Impact variance, ts = H', '')
 
-p37 = ph(impact_βEHμE_B_var, "βEH","μE")
-p38 = ph(impact_βEHμH_B_var, "βEH","μH")
-p39 = ph(impact_βEHΛH_B_var, "βEH","ΛH")
-p40 = ph(impact_βEHμE_H_var, "βEH","μE")
-p41 = ph(impact_βEHμH_H_var, "βEH","μH")
-p42 = ph(impact_βEHΛH_H_var, "βEH","ΛH")
-p43 = ph(impact_βEHμE_A_var, "βEH","μE")
-p44 = ph(impact_βEHμH_A_var, "βEH","μH")
-p45 = ph(impact_βEHΛH_A_var, "βEH","ΛH")
-p46 = ph(impact_βEHμE_E_var, "βEH","μE")
-p47 = ph(impact_βEHμH_E_var, "βEH","μH")
-p48 = ph(impact_βEHΛH_E_var, "βEH","ΛH")
+p45 = plot_heatmap_var(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Impact variance, ts = A', '')
+p46 = plot_heatmap_var(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Impact variance, ts = A', '')
+p47 = plot_heatmap_var(bEHLH_df_A_impact, c('bEH', 'LH'), 'Impact variance, ts = A', '')
+
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viplot.svg', height=12, width = 20)
+viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p42,p43,p44,p45,p46,p47,nrow=4,ncol=3)
+dev.off()
+"""
 
 #And now recreate plots with varying ΛA
 #1. change initial values of ΛA
@@ -462,25 +412,30 @@ impact_A_2 = [ifelse(!(dat_A_2[i]==0.),
                 1 - dat_A_noLA[i]/dat_A_2[i],
                 0) for i in 1:size(p_E)[1]]
 
-impact_βEHΛA_E = bin_av(impact_E, lower_bin, p_E, 1, 2)
-impact_βEHΛA_H = bin_av(impact_H, lower_bin, p_H, 1, 2)
-impact_βEHΛA_A = bin_av(impact_A, lower_bin, p_A, 1, 2)
-impact_βEHΛA_B = bin_av(impact_B, lower_bin, p_B, 1, 2)
+@rput impact_B_2 impact_H_2 impact_A_2 impact_E_2 p_E p_H p_A p_B
+R"""
+impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
+impact_bEHLA_H = get_mean_var(lower_bin, p_H[, c(11, 2)], impact_H_2)
+impact_bEHLA_A = get_mean_var(lower_bin, p_A[, c(11, 2)], impact_A_2)
+impact_bEHLA_B = get_mean_var(lower_bin, p_B[, c(11, 2)], impact_B_2)
 
-impact_βEHΛA_E_var = bin_var(impact_E, lower_bin, p_E, 1, 2)
-impact_βEHΛA_H_var = bin_var(impact_H, lower_bin, p_H, 1, 2)
-impact_βEHΛA_A_var = bin_var(impact_A, lower_bin, p_A, 1, 2)
-impact_βEHΛA_B_var = bin_var(impact_B, lower_bin, p_B, 1, 2)
+p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '')
+p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '')
+p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '')
+p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '')
 
-#4. plot
-p49 = ph(impact_βEHΛA_B, "βEH","ΛA")
-p50 = ph(impact_βEHΛA_H, "βEH","ΛA")
-p51 = ph(impact_βEHΛA_A, "βEH","ΛA")
-p52 = ph(impact_βEHΛA_E, "βEH","ΛA")
+p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '')
+p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '')
+p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '')
+p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '')
+"""
 
-impact_impact_βEHΛA = plot(p49, p50, p51, p52, layout = (4,1), colorbar = false)
+R"""
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
+miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
+dev.off()
 
-p53 = ph(impact_βEHΛA_B_var, "βEH","ΛA")
-p54 = ph(impact_βEHΛA_H_var, "βEH","ΛA")
-p55 = ph(impact_βEHΛA_A_var, "βEH","ΛA")
-p56 = ph(impact_βEHΛA_E_var, "βEH","ΛA")
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
+viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
+dev.off()
+"""
