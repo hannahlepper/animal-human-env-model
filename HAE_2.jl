@@ -114,17 +114,11 @@ p_initial_E[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).E for x in [4,5,6,7,8,9,10]]
 
 #get rid of negative numbers, or values over 1.5
 function keep_ps(p)
-    keep=[]
-    @time for i in 1:size(p)[1]
-        if !(any(p[i,:] .< 0.))
-            if !(any(p[i,:] .> 1.5))
-                if !(p[i,13] > 1.) #no big values of μH
-                    push!(keep, i)
-                end
-            end
-        end
-    end
-    return p[keep, :]
+    sets_LH = p[:,1] .< 1.
+    sets_muH = p[:,13] .< 1.
+    sets_muE = p[:,15] .<1.5
+    keep = findall(sets_LH .& sets_muH .& sets_muE)
+    return p[keep,:]
 end
 p_B = keep_ps(p_initial_B)
 p_H = keep_ps(p_initial_H)
@@ -133,13 +127,13 @@ p_E = keep_ps(p_initial_E)
 
 plot(
     histogram(p_B[:,[1,11,13,15]],
-              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["ΛH" "βEH" "μH" "μE"]),
+              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_H[:,[1,11,13,15]],
-            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["ΛH" "βEH" "μH" "μE"]),
+            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_A[:,[1,11,13,15]],
-              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["ΛH" "βEH" "μH" "μE"]),
+              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_E[:,[1,11,13,15]],
-            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["ΛH" "βEH" "μH" "μE"]),
+            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
     layout = 4)
 
 #now numerically solve for each parameter set
@@ -170,17 +164,66 @@ function model_run(p, mod)
 end
 model_run(p_E[1:5,:], unboundeds) #short run to get the function going
 
+#RUN MODELS
+#1. for parameter sets with no interventions and fixed LA
 dat_E = model_run(p_E, unboundeds) #250.2,1.58
 dat_B = model_run(p_B, unboundeds) #256.87, 1.66
 dat_H = model_run(p_H, unboundeds) #248.08, 1.65
 dat_A = model_run(p_A, unboundeds) #245.40, 1.21
 
-#Find number of runs where 0.65 < RH < 0.75
+#2. run for parameter sets with interventions - LA set to 0
+p_B[:,2] .= 0
+p_H[:,2] .= 0
+p_A[:,2] .= 0
+p_E[:,2] .= 0
+dat_E_noLA = model_run(p_E, unboundeds) #262.72, 2.08
+dat_B_noLA = model_run(p_B, unboundeds) #339.46, 227.85
+dat_H_noLA = model_run(p_H, unboundeds) #248.46, 1.78
+dat_A_noLA = model_run(p_A, unboundeds) #282.00, 2.71
+
+#3. run with parameter sets for varying initial values of ΛA
+p_E[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_B[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_H[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_A[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+
+dat_E_2 = model_run(p_E, unboundeds) #249.09, 1.40
+dat_B_2 = model_run(p_B, unboundeds) #612.57, 1.60
+dat_H_2 = model_run(p_H, unboundeds) #248.13, 1.63
+dat_A_2 = model_run(p_A, unboundeds) #249.70, 1.14
+
+#GET PRESENCE/ABSENCE OF TARGETS REACHED
+
+#Get measures of impact
+#1. for fixed LA 0.1 -> 0.0
+impact_E = [ifelse(!(dat_E[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
+                   1 - dat_E_noLA[i]/dat_E[i], #will get %decrease and %increase here, will maybe cut out later
+                   0) for i in 1:size(p_E)[1]]
+impact_B = [ifelse(!(dat_B[i]==0.), 1 - dat_B_noLA[i]/dat_B[i], 0) for i in 1:size(p_E)[1]]
+impact_H = [ifelse(!(dat_H[i]==0.), 1 - dat_H_noLA[i]/dat_H[i], 0) for i in 1:size(p_E)[1]]
+impact_A = [ifelse(!(dat_A[i]==0.), 1 - dat_A_noLA[i]/dat_A[i], 0) for i in 1:size(p_E)[1]]
+
+#2. for varyng LA -> 0.0
+impact_E_2 = [ifelse(!(dat_E_2[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
+                   1 - dat_E_noLA[i]/dat_E_2[i], #will get %decrease and %increase here, will maybe cut out later
+                   0) for i in 1:size(p_E)[1]]
+impact_B_2 = [ifelse(!(dat_B_2[i]==0.), 1 - dat_B_noLA[i]/dat_B_2[i], 0) for i in 1:size(p_E)[1]]
+impact_H_2 = [ifelse(!(dat_H_2[i]==0.), 1 - dat_H_noLA[i]/dat_H_2[i], 0) for i in 1:size(p_E)[1]]
+impact_A_2 = [ifelse(!(dat_A_2[i]==0.), 1 - dat_A_noLA[i]/dat_A_2[i], 0) for i in 1:size(p_E)[1]]
+
+#Did simulations reach target RH of 0.65 - 0.75?
 n_target_B = [ifelse(0.65 < dat_B[i,2] <0.75, 1, 0) for i in 1:size(p_B)[1]]
 n_target_H = [ifelse(0.65 < dat_H[i,2] <0.75, 1, 0) for i in 1:size(p_H)[1]]
 n_target_A = [ifelse(0.65 < dat_A[i,2] <0.75, 1, 0) for i in 1:size(p_A)[1]]
 n_target_E = [ifelse(0.65 < dat_E[i,2] <0.75, 1, 0) for i in 1:size(p_E)[1]]
 
+#Did simulations have a low impact of less than 2%?
+n_lowimpact_E = [ifelse(0. < impact_E[i] < 0.02,1,0) for i in 1:size(p_E)[1]]
+n_lowimpact_B = [ifelse(0. < impact_B[i] < 0.02,1,0) for i in 1:size(p_B)[1]]
+n_lowimpact_H = [ifelse(0. < impact_H[i] < 0.02,1,0) for i in 1:size(p_H)[1]]
+n_lowimpact_A = [ifelse(0. < impact_A[i] < 0.02,1,0) for i in 1:size(p_A)[1]]
+
+#What % of simulations reached the targets of interest?
 #Bins for parameters
 lower_bin = [0.:0.05:1;]
 bin_N = size(lower_bin)[1]
@@ -191,6 +234,7 @@ source("M:/Github/animal-human-env-model/RGetPercAndPlot.R")
 """
 
 @rput lower_bin p_E p_A p_B p_H n_target_A n_target_B n_target_E n_target_H
+@rput impact_A impact_B impact_E impact_H impact_A_2 impact_B_2 impact_E_2 impact_H_2 n_lowimpact_A n_lowimpact_B n_lowimpact_E n_lowimpact_H
 
 # Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
 R"""
@@ -231,50 +275,12 @@ p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '', 
 """
 
 R"""
-svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=12, width = 20)
+#svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=12, width = 20)
 ptaplot <- grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12, nrow = 4, ncol = 3)
-dev.off()
+#dev.off()
 """
 
 #Conclusions 2: impact of reducing LA is low for parameter combinations of interest
-#I think I should do this for human transmission scenario and then the animal transmission scenario - best and worst chance to have an impact
-
-#run with 0 lambda value
-p_B[:,2] .= 0
-p_H[:,2] .= 0
-p_A[:,2] .= 0
-p_E[:,2] .= 0
-dat_E_noLA = model_run(p_E, unboundeds) #262.72, 2.08
-dat_B_noLA = model_run(p_B, unboundeds) #339.46, 227.85
-dat_H_noLA = model_run(p_H, unboundeds) #248.46, 1.78
-dat_A_noLA = model_run(p_A, unboundeds) #282.00, 2.71
-
-impact_E = [ifelse(!(dat_E[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
-                   1 - dat_E_noLA[i]/dat_E[i], #will get %decrease and %increase here, will maybe cut out later
-                   0) for i in 1:size(p_E)[1]]
-impact_B = [ifelse(!(dat_B[i]==0.),
-                  1 - dat_B_noLA[i]/dat_B[i],
-                  0) for i in 1:size(p_E)[1]]
-impact_H = [ifelse(!(dat_H[i]==0.),
-                 1 - dat_H_noLA[i]/dat_H[i],
-                 0) for i in 1:size(p_E)[1]]
-impact_A = [ifelse(!(dat_A[i]==0.),
-                1 - dat_A_noLA[i]/dat_A[i],
-                0) for i in 1:size(p_E)[1]]
-
-n_lowimpact_E = [ifelse(0. < impact_E[i] < 0.02,
-                        1,
-                        0) for i in 1:size(p_E)[1]]
-n_lowimpact_B = [ifelse(0. < impact_B[i] < 0.02,
-                        1,
-                        0) for i in 1:size(p_B)[1]]
-n_lowimpact_H = [ifelse(0. < impact_H[i] < 0.02,
-                        1,
-                        0) for i in 1:size(p_H)[1]]
-n_lowimpact_A = [ifelse(0. < impact_A[i] < 0.02,
-                        1,
-                        0) for i in 1:size(p_A)[1]]
-
 @rput impact_E impact_B impact_A impact_H n_lowimpact_E n_lowimpact_B n_lowimpact_A n_lowimpact_H
 R"""
 bEHmuE_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 15)], n_lowimpact_E)
@@ -298,7 +304,8 @@ R"""
 p13 = plot_heatmap(bEHmuE_df_E_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
 p14 = plot_heatmap(bEHmuH_df_E_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
 p15 = plot_heatmap(bEHLH_df_E_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
-
+"""
+R"""
 p16 = plot_heatmap(bEHmuE_df_B_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
 p17 = plot_heatmap(bEHmuH_df_B_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
 p18 = plot_heatmap(bEHLH_df_B_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
@@ -313,13 +320,13 @@ p24 = plot_heatmap(bEHLH_df_A_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=12, width = 20)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=12, width = 20)
 liplot = grid.arrange(p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,nrow = 4, ncol = 3)
-dev.off()
+#dev.off()
 """
 
 
-#Final conclusion - increasing βEH in many cases reduces the impacts of increased LH
+#Conclusion 3: increasing βEH in many cases reduces the impacts of increased LA
 R"""
 bEHmuE_df_E_impact = get_mean_var(lower_bin, p_E[, c(11, 15)], impact_E)
 bEHmuH_df_E_impact = get_mean_var(lower_bin, p_E[, c(11, 13)], impact_E)
@@ -339,27 +346,27 @@ bEHLH_df_H_impact = get_mean_var(lower_bin, p_H[, c(11, 1)], impact_H)
 """
 
 R"""
-p25_1 = plot_heatmap(bEHmuE_df_E_impact, c('bEH', 'muE'), 'Mean impact, ts = E', '', limits = c(0, 0.5))
-p25 = plot_heatmap(bEHmuH_df_E_impact, c('bEH', 'muH'), 'Mean impact, ts = E', '', limits = c(0, 0.5))
-p26 = plot_heatmap(bEHLH_df_E_impact, c('bEH', 'LH'), 'Mean impact, ts = E', '', limits = c(0, 0.5))
+p25_1 = plot_heatmap(bEHmuE_df_E_impact, c('bEH', 'muE'), 'Mean impact, ts = E', '', limits = c(0, 0.4))
+p25 = plot_heatmap(bEHmuH_df_E_impact, c('bEH', 'muH'), 'Mean impact, ts = E', '', limits = c(0, 0.4))
+p26 = plot_heatmap(bEHLH_df_E_impact, c('bEH', 'LH'), 'Mean impact, ts = E', '', limits = c(0, 0.4))
 
-p27 = plot_heatmap(bEHmuE_df_B_impact, c('bEH', 'muE'), 'Mean impact, ts = B', '', limits = c(0, 0.5))
-p28 = plot_heatmap(bEHmuH_df_B_impact, c('bEH', 'muH'), 'Mean impact, ts = B', '', limits = c(0, 0.5))
-p29 = plot_heatmap(bEHLH_df_B_impact, c('bEH', 'LH'), 'Mean impact, ts = B', '', limits = c(0, 0.5))
+p27 = plot_heatmap(bEHmuE_df_B_impact, c('bEH', 'muE'), 'Mean impact, ts = B', '', limits = c(0, 0.4))
+p28 = plot_heatmap(bEHmuH_df_B_impact, c('bEH', 'muH'), 'Mean impact, ts = B', '', limits = c(0, 0.4))
+p29 = plot_heatmap(bEHLH_df_B_impact, c('bEH', 'LH'), 'Mean impact, ts = B', '', limits = c(0, 0.4))
 
-p30 = plot_heatmap(bEHmuE_df_H_impact, c('bEH', 'muE'), 'Mean impact, ts = H', '', limits = c(0, 0.5))
-p31 = plot_heatmap(bEHmuH_df_H_impact, c('bEH', 'muH'), 'Mean impact, ts = H', '', limits = c(0, 0.5))
-p32 = plot_heatmap(bEHLH_df_H_impact, c('bEH', 'LH'), 'Mean impact, ts = H', '', limits = c(0, 0.5))
+p30 = plot_heatmap(bEHmuE_df_H_impact, c('bEH', 'muE'), 'Mean impact, ts = H', '', limits = c(0, 0.4))
+p31 = plot_heatmap(bEHmuH_df_H_impact, c('bEH', 'muH'), 'Mean impact, ts = H', '', limits = c(0, 0.4))
+p32 = plot_heatmap(bEHLH_df_H_impact, c('bEH', 'LH'), 'Mean impact, ts = H', '', limits = c(0, 0.4))
 
-p33 = plot_heatmap(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Mean impact, ts = A', '', limits = c(0, 0.5))
-p34 = plot_heatmap(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Mean impact, ts = A', '', limits = c(0, 0.5))
-p35 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '', limits = c(0, 0.5))
+p33 = plot_heatmap(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
+p34 = plot_heatmap(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
+p4 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
 """
 
 R"""
-#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
 miplot = grid.arrange(p25_1,p25,p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,nrow=4,ncol=3)
-#dev.off()
+dev.off()
 """
 
 R"""
@@ -384,57 +391,35 @@ viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p42,p43,p44,p45,p46,p47,nrow=4,nco
 #dev.off()
 """
 
-#And now recreate plots with varying ΛA
-#1. change initial values of ΛA
-p_E[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_B[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_H[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_A[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-
-#2. Re-run models
-dat_E_2 = model_run(p_E, unboundeds) #249.09, 1.40
-dat_B_2 = model_run(p_B, unboundeds) #612.57, 1.60
-dat_H_2 = model_run(p_H, unboundeds) #248.13, 1.63
-dat_A_2 = model_run(p_A, unboundeds) #249.70, 1.14
-
-#3. get impact and summarise for parameter bins
-impact_E_2 = [ifelse(!(dat_E_2[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
-                   1 - dat_E_noLA[i]/dat_E_2[i], #will get %decrease and %increase here, will maybe cut out later
-                   0) for i in 1:size(p_E)[1]]
-impact_B_2 = [ifelse(!(dat_B_2[i]==0.),
-                  1 - dat_B_noLA[i]/dat_B_2[i],
-                  0) for i in 1:size(p_E)[1]]
-impact_H_2 = [ifelse(!(dat_H_2[i]==0.),
-                 1 - dat_H_noLA[i]/dat_H_2[i],
-                 0) for i in 1:size(p_E)[1]]
-impact_A_2 = [ifelse(!(dat_A_2[i]==0.),
-                1 - dat_A_noLA[i]/dat_A_2[i],
-                0) for i in 1:size(p_E)[1]]
-
-@rput impact_B_2 impact_H_2 impact_A_2 impact_E_2 p_E p_H p_A p_B
 R"""
 impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
 impact_bEHLA_H = get_mean_var(lower_bin, p_H[, c(11, 2)], impact_H_2)
 impact_bEHLA_A = get_mean_var(lower_bin, p_A[, c(11, 2)], impact_A_2)
 impact_bEHLA_B = get_mean_var(lower_bin, p_B[, c(11, 2)], impact_B_2)
 
-p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '')
-p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '')
-p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '')
-p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '')
+p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
+p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '', limits = c(0.,max(impact_bEHLA_B$mean)))
+p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '', limits = c(0.,max(impact_bEHLA_H$mean)))
+p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '', limits = c(0.,max(impact_bEHLA_A$mean)))
 
-p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '')
-p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '')
-p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '')
-p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '')
+p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '', limits = c(0.,max(impact_bEHLA_E$var)))
+p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '', limits = c(0.,max(impact_bEHLA_B$var)))
+p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '', limits = c(0.,max(impact_bEHLA_H$var)))
+p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '', limits = c(0.,max(impact_bEHLA_A$var)))
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
-miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
-dev.off()
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
+#miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
+#dev.off()
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
 viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
-dev.off()
+#dev.off()
+"""
+
+R"""
+impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
+p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
+p48
 """

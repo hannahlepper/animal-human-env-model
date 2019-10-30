@@ -53,7 +53,7 @@ plot_heatmap_var <- function(df, axisnames, plottitle, filltitle, limits) {
           panel.grid.minor = element_line(colour = NA),
           strip.background = element_rect(fill = NA, colour = NA),
           axis.text = element_text(size = 8)) +
-    scale_fill_gradientn(colors = myPalette(100), limits = limits)) +
+    scale_fill_gradientn(colors = myPalette(100), limits = limits) +
     labs(x = axisnames[1], y = axisnames[2], title = plottitle) 
 }
 
