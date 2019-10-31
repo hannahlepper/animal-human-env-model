@@ -1,8 +1,6 @@
 using DifferentialEquations
 using Distributions
 using Plots
-using CSV
-using Tables
 using RCall
 
 # model function
@@ -31,6 +29,11 @@ struct lnp
     μ::Float64
 end
 
+struct bp
+    α::Float64
+    β::Float64
+end
+
 struct ts
     B
     H
@@ -39,18 +42,32 @@ struct ts
 end
 
 struct vp
-    βEH::ts
-    ΛH::lnp
-    μE::lnp
-    μH::lnp
+    βEH
+    ΛH
+    μE
+    μH
 end
 
-σ=1.
-pv = vp(ts(lnp(σ, 0.01), lnp(σ, 0.001),
-            lnp(σ, 0.14), lnp(σ, 0.001)), #βEH
-          lnp(σ, 0.1), #ΛH
-          lnp(σ, 0.2), #μE
-          lnp(σ, 0.1)) #μH
+#σ=1.
+#pv = vp(ts(lnp(σ, 0.01), lnp(σ, 0.001),
+#            lnp(σ, 0.14), lnp(σ, 0.001)), #βEH
+#          lnp(σ, 0.1), #ΛH
+#          lnp(σ, 0.2), #μE
+#          lnp(σ, 0.1)) #μH
+
+#beta distribution with mean = parameter selected in transmission scenarios, and var = mean/20
+#parameters estimated from R code
+pv = vp(ts(bp(0.188, 18.612), bp(0.01898, 18.96102),
+          bp(2.268, 13.932), bp(0.01898, 18.96102)), #βEH
+        bp(1.7, 15.3), #ΛH
+        bp(3, 12), #μE
+        bp(1.7, 15.3)) #μH
+
+pv2 = vp(ts(bp(0.188, 18.612), bp(0.01898, 18.96102),
+          bp(2.268, 13.932), bp(0.01898, 18.96102)), #βEH
+        bp(1.7, 15.3), #ΛH
+        bp(3, 12), #μE
+        bp(1.7, 15.3)) #μH
 
 #non varying parameters
 struct f_p
@@ -82,9 +99,13 @@ N = 2000000
 p_initial = zeros(N, 15)
 
 #Parameters that have sampling distributions
-p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
-p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
-p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
+#p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
+#p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
+#p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
+p_initial[:,1] .= rand(Beta(pv.ΛH.α, pv.ΛH.β), N)
+p_initial[:,15] .= rand(Beta(pv.μE.α, pv.μE.β), N)
+p_initial[:,13] .= rand(Beta(pv.μH.α, pv.μH.β), N)
+
 #Parameters that are fixed
 #ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βHE, μA
 p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]'
@@ -142,27 +163,25 @@ function model_run(p, mod)
     dat = zeros(size(p)[1],2)
     u0 = [0.0;0.0;0.0]
     tspan = (0., 500.)
-    re_run = []
+
     #run 1
     @time for i in 1:size(p)[1]
       prob = ODEProblem(mod, u0, tspan, p[i,:])
       sol = solve(prob)
       dat[i, :] .= Array{Float64,1}(map(n -> sol(n)[1], [400,500]))
-      if abs(dat[i,2] - dat[i,1]) > 0.0000001
-          push!(re_run, i)
-      end
     end
 
-    #rerun for those possibly not at equilibrium
+    #run 2 - rerun for those possibly not at equilibrium
+    not_eqlm = [abs(dat[i,2] - dat[i,1]) > 0.0000001 for i in 1:size(p)[1]]
+    rerun = findall(not_eqlm)
     tspan = (0.,10000.)
-    @time for i in re_run
+    @time for i in rerun
         prob = ODEProblem(mod, u0, tspan, p[i,:])
         sol = solve(prob)
         dat[i, :] .= Array{Float64,1}(map(n -> sol(n)[1], [1900,2000]))
     end
     return dat
 end
-model_run(p_E[1:5,:], unboundeds) #short run to get the function going
 
 #RUN MODELS
 #1. for parameter sets with no interventions and fixed LA
@@ -192,24 +211,48 @@ dat_B_2 = model_run(p_B, unboundeds) #612.57, 1.60
 dat_H_2 = model_run(p_H, unboundeds) #248.13, 1.63
 dat_A_2 = model_run(p_A, unboundeds) #249.70, 1.14
 
+#4. Run with betEH set to 0
+p_E_bEHint = copy(p_E)
+p_E_bEHint[:,11] .= 0
+p_B_bEHint = copy(p_B)
+p_B_bEHint[:,11] .= 0
+p_H_bEHint = copy(p_H)
+p_H_bEHint[:,11] .= 0
+p_A_bEHint = copy(p_A)
+p_A_bEHint[:,11] .= 0
+dat_E_nobEH = model_run(p_E_bEHint, unboundeds) #262.72, 2.08
+dat_B_nobEH = model_run(p_B_bEHint, unboundeds) #339.46, 227.85
+dat_H_nobEH = model_run(p_H_bEHint, unboundeds) #248.46, 1.78
+dat_A_nobEH = model_run(p_A_bEHint, unboundeds) #282.00, 2.71
+
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
 #Get measures of impact
 #1. for fixed LA 0.1 -> 0.0
-impact_E = [ifelse(!(dat_E[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
-                   1 - dat_E_noLA[i]/dat_E[i], #will get %decrease and %increase here, will maybe cut out later
-                   0) for i in 1:size(p_E)[1]]
-impact_B = [ifelse(!(dat_B[i]==0.), 1 - dat_B_noLA[i]/dat_B[i], 0) for i in 1:size(p_E)[1]]
-impact_H = [ifelse(!(dat_H[i]==0.), 1 - dat_H_noLA[i]/dat_H[i], 0) for i in 1:size(p_E)[1]]
-impact_A = [ifelse(!(dat_A[i]==0.), 1 - dat_A_noLA[i]/dat_A[i], 0) for i in 1:size(p_E)[1]]
+function get_impact(dat1, dat2)
+    if !(dat1==0.) #can't have a 0 in denominator
+        1 - dat2/dat1 #will get %decrease and %increase here
+    else
+        1 - dat2/(dat1 + 0.0000001) #will get %decrease and %increase here
+    end
+end
+
+impact_E = [get_impact(dat_E[i,2], dat_E_noLA[i,2]) for i in 1:size(p_E)[1]]
+impact_B = [get_impact(dat_B[i,2], dat_B_noLA[i,2]) for i in 1:size(p_B)[1]]
+impact_H = [get_impact(dat_H[i,2], dat_H_noLA[i,2]) for i in 1:size(p_H)[1]]
+impact_A = [get_impact(dat_A[i,2], dat_A_noLA[i,2]) for i in 1:size(p_A)[1]]
 
 #2. for varyng LA -> 0.0
-impact_E_2 = [ifelse(!(dat_E_2[i]==0.), #can't have a 0 in denominator, and if 0 wouldn't expect any impact anyway
-                   1 - dat_E_noLA[i]/dat_E_2[i], #will get %decrease and %increase here, will maybe cut out later
-                   0) for i in 1:size(p_E)[1]]
-impact_B_2 = [ifelse(!(dat_B_2[i]==0.), 1 - dat_B_noLA[i]/dat_B_2[i], 0) for i in 1:size(p_E)[1]]
-impact_H_2 = [ifelse(!(dat_H_2[i]==0.), 1 - dat_H_noLA[i]/dat_H_2[i], 0) for i in 1:size(p_E)[1]]
-impact_A_2 = [ifelse(!(dat_A_2[i]==0.), 1 - dat_A_noLA[i]/dat_A_2[i], 0) for i in 1:size(p_E)[1]]
+impact_E_2 = [get_impact(dat_E_2[i,2], dat_E_noLA[i,2]) for i in 1:size(p_E)[1]]
+impact_B_2 = [get_impact(dat_B_2[i,2], dat_B_noLA[i,2]) for i in 1:size(p_B)[1]]
+impact_H_2 = [get_impact(dat_H_2[i,2], dat_H_noLA[i,2]) for i in 1:size(p_H)[1]]
+impact_A_2 = [get_impact(dat_A_2[i,2], dat_A_noLA[i,2]) for i in 1:size(p_A)[1]]
+
+#3. for varying initial bEH values
+impact_bEH_E = [get_impact(dat_E[i,2], dat_E_nobEH[i,2]) for i in 1:size(p_E)[1]]
+impact_bEH_B = [get_impact(dat_B[i,2], dat_B_nobEH[i,2]) for i in 1:size(p_B)[1]]
+impact_bEH_A = [get_impact(dat_A[i,2], dat_A_nobEH[i,2]) for i in 1:size(p_A)[1]]
+impact_bEH_H = [get_impact(dat_H[i,2], dat_H_nobEH[i,2]) for i in 1:size(p_H)[1]]
 
 #Did simulations reach target RH of 0.65 - 0.75?
 n_target_B = [ifelse(0.65 < dat_B[i,2] <0.75, 1, 0) for i in 1:size(p_B)[1]]
@@ -235,6 +278,7 @@ source("M:/Github/animal-human-env-model/RGetPercAndPlot.R")
 
 @rput lower_bin p_E p_A p_B p_H n_target_A n_target_B n_target_E n_target_H
 @rput impact_A impact_B impact_E impact_H impact_A_2 impact_B_2 impact_E_2 impact_H_2 n_lowimpact_A n_lowimpact_B n_lowimpact_E n_lowimpact_H
+@rput impact_bEH_A impact_bEH_B impact_bEH_E impact_bEH_H
 
 # Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
 R"""
@@ -421,5 +465,57 @@ viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
 R"""
 impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
 p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
-p48
+"""
+
+R"""
+df_E <- data.frame(bEH = p_E[1:10000,11], LA = p_E[1:10000,2], impact = impact_bEH_E[1:10000])
+df_B <- data.frame(bEH = p_B[1:10000,11], LA = p_B[1:10000,2], impact = impact_bEH_B[1:10000])
+df_A <- data.frame(bEH = p_A[1:10000,11], LA = p_A[1:10000,2], impact = impact_bEH_A[1:10000])
+df_H <- data.frame(bEH = p_H[1:10000,11], LA = p_H[1:10000,2], impact = impact_bEH_H[1:10000])
+
+p49 <- ggplot(df_E, aes(bEH, impact)) +
+                geom_point(shape = 1, col = "green")+
+                labs(title = "ts = E") +
+                geom_smooth(data = subset(df_E, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+p50 <- ggplot(df_E, aes(LA, impact)) +
+                geom_point(shape = 1, col = "red")+
+                labs(title = "ts = E") +
+                geom_smooth(data = subset(df_E, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+
+p51 <- ggplot(df_B, aes(bEH, impact)) +
+                geom_point(shape = 1, col = "green")+
+                labs(title = "ts = B")+
+                geom_smooth(data = subset(df_B, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+p52 <- ggplot(df_B, aes(LA, impact)) +
+                geom_point(shape = 1, col = "red")+
+                labs(title = "ts = B")+
+                geom_smooth(data = subset(df_B, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+
+p53 <- ggplot(df_A, aes(bEH, impact)) +
+                geom_point(shape = 1, col = "green")+
+                labs(title = "ts = A")+
+                geom_smooth(data = subset(df_A, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+p54 <- ggplot(df_A, aes(LA, impact)) +
+                geom_point(shape = 1, col = "red")+
+                labs(title = "ts = A")+
+                geom_smooth(data = subset(df_A, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+
+p55 <- ggplot(df_H, aes(bEH, impact)) +
+                geom_point(shape = 1, col = "green")+
+                labs(title = "ts = H")+
+                geom_smooth(data = subset(df_H, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+p56 <- ggplot(df_H, aes(LA, impact)) +
+                geom_point(shape = 1, col = "red")+
+                labs(title = "ts = H")+
+                geom_smooth(data = subset(df_H, impact > 0),
+                    method = "glm", method.args = list(family = "beta"))
+
+grid.arrange(p49, p50, p51, p52, p53, p54, p55, p56, nrow = 4)
 """
