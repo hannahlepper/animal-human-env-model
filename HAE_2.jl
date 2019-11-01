@@ -63,11 +63,6 @@ pv = vp(ts(bp(0.188, 18.612), bp(0.01898, 18.96102),
         bp(3, 12), #μE
         bp(1.7, 15.3)) #μH
 
-pv2 = vp(ts(bp(0.188, 18.612), bp(0.01898, 18.96102),
-          bp(2.268, 13.932), bp(0.01898, 18.96102)), #βEH
-        bp(1.7, 15.3), #ΛH
-        bp(3, 12), #μE
-        bp(1.7, 15.3)) #μH
 
 #non varying parameters
 struct f_p
@@ -148,13 +143,13 @@ p_E = keep_ps(p_initial_E)
 
 plot(
     histogram(p_B[:,[1,11,13,15]],
-              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
+              xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_H[:,[1,11,13,15]],
-            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
+            xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_A[:,[1,11,13,15]],
-              xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
+              xticks = range(0, 1; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
     histogram(p_E[:,[1,11,13,15]],
-            xticks = range(0, 1.5; step =0.1),xlims = (0.0, 1.5),label = ["LH" "bEH" "mH" "mE"]),
+            xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
     layout = 4)
 
 #now numerically solve for each parameter set
@@ -348,8 +343,7 @@ R"""
 p13 = plot_heatmap(bEHmuE_df_E_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
 p14 = plot_heatmap(bEHmuH_df_E_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
 p15 = plot_heatmap(bEHLH_df_E_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = E', '', limits = c(0,1))
-"""
-R"""
+
 p16 = plot_heatmap(bEHmuE_df_B_low_impact, c('bEH', 'muE'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
 p17 = plot_heatmap(bEHmuH_df_B_low_impact, c('bEH', 'muH'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
 p18 = plot_heatmap(bEHLH_df_B_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts = B', '', limits = c(0,1))
@@ -473,49 +467,33 @@ df_B <- data.frame(bEH = p_B[1:10000,11], LA = p_B[1:10000,2], impact = impact_b
 df_A <- data.frame(bEH = p_A[1:10000,11], LA = p_A[1:10000,2], impact = impact_bEH_A[1:10000])
 df_H <- data.frame(bEH = p_H[1:10000,11], LA = p_H[1:10000,2], impact = impact_bEH_H[1:10000])
 
-p49 <- ggplot(df_E, aes(bEH, impact)) +
-                geom_point(shape = 1, col = "green")+
-                labs(title = "ts = E") +
+p49 <- ggplot(df_E, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = E") +
                 geom_smooth(data = subset(df_E, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
-p50 <- ggplot(df_E, aes(LA, impact)) +
-                geom_point(shape = 1, col = "red")+
-                labs(title = "ts = E") +
+                    method = "glm", method.args = list(family = "binomial"))
+p50 <- ggplot(df_E, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = E") +
                 geom_smooth(data = subset(df_E, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
+                    method = "glm", method.args = list(family = "binomial"))
 
-p51 <- ggplot(df_B, aes(bEH, impact)) +
-                geom_point(shape = 1, col = "green")+
-                labs(title = "ts = B")+
+p51 <- ggplot(df_B, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = B")+
                 geom_smooth(data = subset(df_B, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
-p52 <- ggplot(df_B, aes(LA, impact)) +
-                geom_point(shape = 1, col = "red")+
-                labs(title = "ts = B")+
+                    method = "glm", method.args = list(family = "binomial"))
+p52 <- ggplot(df_B, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = B")+
                 geom_smooth(data = subset(df_B, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
+                    method = "glm", method.args = list(family = "binomial"))
 
-p53 <- ggplot(df_A, aes(bEH, impact)) +
-                geom_point(shape = 1, col = "green")+
-                labs(title = "ts = A")+
+p53 <- ggplot(df_A, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = A")+
                 geom_smooth(data = subset(df_A, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
-p54 <- ggplot(df_A, aes(LA, impact)) +
-                geom_point(shape = 1, col = "red")+
-                labs(title = "ts = A")+
+                    method = "glm", method.args = list(family = "binomial"))
+p54 <- ggplot(df_A, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = A")+
                 geom_smooth(data = subset(df_A, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
+                    method = "glm", method.args = list(family = "binomial"))
 
-p55 <- ggplot(df_H, aes(bEH, impact)) +
-                geom_point(shape = 1, col = "green")+
-                labs(title = "ts = H")+
+p55 <- ggplot(df_H, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = H")+
                 geom_smooth(data = subset(df_H, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
-p56 <- ggplot(df_H, aes(LA, impact)) +
-                geom_point(shape = 1, col = "red")+
-                labs(title = "ts = H")+
+                    method = "glm", method.args = list(family = "binomial"))
+p56 <- ggplot(df_H, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = H")+
                 geom_smooth(data = subset(df_H, impact > 0),
-                    method = "glm", method.args = list(family = "beta"))
+                    method = "glm", method.args = list(family = "binomial"))
 
 grid.arrange(p49, p50, p51, p52, p53, p54, p55, p56, nrow = 4)
 """
