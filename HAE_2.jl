@@ -186,27 +186,46 @@ dat_H = model_run(p_H, unboundeds) #248.08, 1.65
 dat_A = model_run(p_A, unboundeds) #245.40, 1.21
 
 #2. run for parameter sets with interventions - LA set to 0
-p_B[:,2] .= 0
-p_H[:,2] .= 0
-p_A[:,2] .= 0
-p_E[:,2] .= 0
+p_E_LA_int = copy(p_E)
+p_B_LA_int = copy(p_B)
+p_H_LA_int = copy(p_H)
+p_A_LA_int = copy(p_A)
+p_B_LA_int[:,2] .= 0
+p_H_LA_int[:,2] .= 0
+p_A_LA_int[:,2] .= 0
+p_E_LA_int[:,2] .= 0
+p_E_LA_int[:,11] .= 0.14
+p_B_LA_int[:,11] .= 0.01
+p_H_LA_int[:,11] .= 0.001
+p_A_LA_int[:,11] .= 0.001
 dat_E_noLA = model_run(p_E, unboundeds) #262.72, 2.08
 dat_B_noLA = model_run(p_B, unboundeds) #339.46, 227.85
 dat_H_noLA = model_run(p_H, unboundeds) #248.46, 1.78
 dat_A_noLA = model_run(p_A, unboundeds) #282.00, 2.71
 
-#3. run with parameter sets for varying initial values of ΛA
-p_E[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_B[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_H[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_A[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+#3. run with parameter sets for varying initial values of ΛA and across the bEH range
+p_E_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_B_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_B)[1])
+p_H_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_H)[1])
+p_A_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_A)[1])
 
-dat_E_2 = model_run(p_E, unboundeds) #249.09, 1.40
-dat_B_2 = model_run(p_B, unboundeds) #612.57, 1.60
-dat_H_2 = model_run(p_H, unboundeds) #248.13, 1.63
-dat_A_2 = model_run(p_A, unboundeds) #249.70, 1.14
+dat_E_2 = model_run(p_E_LA_int, unboundeds) #249.09, 1.40
+dat_B_2 = model_run(p_B_LA_int, unboundeds) #612.57, 1.60
+dat_H_2 = model_run(p_H_LA_int, unboundeds) #248.13, 1.63
+dat_A_2 = model_run(p_A_LA_int, unboundeds) #249.70, 1.14
 
-#4. Run with betEH set to 0
+#4. run with parameter sets for varying initial values of ΛA and fixed values of bEH
+p_E_LA_int[:,11] .= 0.14
+p_B_LA_int[:,11] .= 0.01
+p_H_LA_int[:,11] .= 0.001
+p_A_LA_int[:,11] .= 0.001
+
+dat_E_3 = model_run(p_E_LA_int, unboundeds) #249.09, 1.40
+dat_B_3 = model_run(p_B_LA_int, unboundeds) #612.57, 1.60
+dat_H_3 = model_run(p_H_LA_int, unboundeds) #248.13, 1.63
+dat_A_3 = model_run(p_A_LA_int, unboundeds) #249.70, 1.14
+
+#5. Run with betEH set to 0 and LA set to 0.1
 p_E_bEHint = copy(p_E)
 p_E_bEHint[:,11] .= 0
 p_B_bEHint = copy(p_B)
@@ -272,6 +291,7 @@ source("M:/Github/animal-human-env-model/RGetPercAndPlot.R")
 """
 
 @rput lower_bin p_E p_A p_B p_H n_target_A n_target_B n_target_E n_target_H
+@rput p_E_LA_int p_A p_B p_H
 @rput impact_A impact_B impact_E impact_H impact_A_2 impact_B_2 impact_E_2 impact_H_2 n_lowimpact_A n_lowimpact_B n_lowimpact_E n_lowimpact_H
 @rput impact_bEH_A impact_bEH_B impact_bEH_E impact_bEH_H
 
@@ -467,33 +487,33 @@ df_B <- data.frame(bEH = p_B[1:10000,11], LA = p_B[1:10000,2], impact = impact_b
 df_A <- data.frame(bEH = p_A[1:10000,11], LA = p_A[1:10000,2], impact = impact_bEH_A[1:10000])
 df_H <- data.frame(bEH = p_H[1:10000,11], LA = p_H[1:10000,2], impact = impact_bEH_H[1:10000])
 
-p49 <- ggplot(df_E, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = E") +
-                geom_smooth(data = subset(df_E, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
-p50 <- ggplot(df_E, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = E") +
-                geom_smooth(data = subset(df_E, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
+p49 <- ggplot(df_E, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = E") #+
+                #geom_smooth(data = subset(df_E, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
+p50 <- ggplot(df_E, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = E") #+
+                #geom_smooth(data = subset(df_E, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
 
-p51 <- ggplot(df_B, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = B")+
-                geom_smooth(data = subset(df_B, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
-p52 <- ggplot(df_B, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = B")+
-                geom_smooth(data = subset(df_B, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
+p51 <- ggplot(df_B, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = B")#+
+                #geom_smooth(data = subset(df_B, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
+p52 <- ggplot(df_B, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = B")#+
+                #geom_smooth(data = subset(df_B, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
 
-p53 <- ggplot(df_A, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = A")+
-                geom_smooth(data = subset(df_A, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
-p54 <- ggplot(df_A, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = A")+
-                geom_smooth(data = subset(df_A, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
+p53 <- ggplot(df_A, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = A")#+
+                #geom_smooth(data = subset(df_A, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
+p54 <- ggplot(df_A, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = A")#+
+                #geom_smooth(data = subset(df_A, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
 
-p55 <- ggplot(df_H, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = H")+
-                geom_smooth(data = subset(df_H, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
-p56 <- ggplot(df_H, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = H")+
-                geom_smooth(data = subset(df_H, impact > 0),
-                    method = "glm", method.args = list(family = "binomial"))
+p55 <- ggplot(df_H, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = H")#+
+                #geom_smooth(data = subset(df_H, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
+p56 <- ggplot(df_H, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = H")#+
+                #geom_smooth(data = subset(df_H, impact > 0),
+                #    method = "glm", method.args = list(family = "binomial"))
 
 grid.arrange(p49, p50, p51, p52, p53, p54, p55, p56, nrow = 4)
 """
@@ -529,3 +549,20 @@ ggplot(RH, aes(ts, RH)) + geom_boxplot() +
 """
 
 #Investigate negative impacts
+findall(0 .> impact_B_2)
+
+minimum(impact_B_2)
+
+findall(impact_B_2 .< 0)
+
+R"hist(impact_B_2)"
+R"min(impact_B_2)"
+R"min(df_B$impact)"
+
+
+R"hist(impact_bEH_B)"
+R"df_B[df_B$impact < 0,]"
+
+R"""
+ggplot(df_B, aes(bEH, impact, col = LA)) + geom_point(shape = 1)
+"""
