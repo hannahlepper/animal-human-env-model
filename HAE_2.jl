@@ -497,3 +497,35 @@ p56 <- ggplot(df_H, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs
 
 grid.arrange(p49, p50, p51, p52, p53, p54, p55, p56, nrow = 4)
 """
+
+#What is the range of impacts?
+#Get parameter sets with +- 10% of bEH value of that transmission scenario
+bEH_E = findall((0.95 * 0.14) .< p_E[:,11] .< (1.05 * 0.14))
+dat_E_bEH_target = dat_E[bEH_E,2]
+
+bEH_B = findall((0.95 * 0.01) .< p_B[:,11] .< (1.05 * 0.01))
+dat_B_bEH_target = dat_B[bEH_B,2]
+
+bEH_A = findall((0.95 * 0.001) .< p_A[:,11] .< (1.05 * 0.001))
+dat_A_bEH_target = dat_A[bEH_A,2]
+
+bEH_H = findall((0.95 * 0.001) .< p_H[:,11] .< (1.05 * 0.001))
+dat_H_bEH_target = dat_H[bEH_H,2]
+
+#Get together RH measures for these indices
+@rput dat_E_bEH_target dat_B_bEH_target dat_H_bEH_target dat_A_bEH_target
+
+R"""
+RH <- data.frame(ts = c(rep('E', length(dat_E_bEH_target)),
+                        rep('B', length(dat_B_bEH_target)),
+                        rep('A', length(dat_A_bEH_target)),
+                        rep('H', length(dat_H_bEH_target))),
+                 RH = c(dat_E_bEH_target,
+                        dat_B_bEH_target,
+                        dat_A_bEH_target,
+                        dat_H_bEH_target))
+ggplot(RH, aes(ts, RH)) + geom_boxplot() +
+    geom_hline(yintercept = 0.71)
+"""
+
+#Investigate negative impacts
