@@ -30,7 +30,8 @@ get_mean_var <- function(lower_bin, p, dat) {
 }
 
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
-myP <- colorRampPalette(c("#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"), space = "Lab")
+myP <- colorRampPalette(c("#330066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"), 
+                        bias = 1.)
 
 plot_heatmap <- function(df, axisnames, plottitle, filltitle, limits) {
   ggplot(df, aes(x_cat, y_cat, fill = mean)) + 
