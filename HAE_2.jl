@@ -179,65 +179,91 @@ function model_run(p, mod)
 end
 
 #RUN MODELS
-#1. for parameter sets with no interventions and fixed LA
-dat_E = model_run(p_E, unboundeds) #250.2,1.58
-dat_B = model_run(p_B, unboundeds) #256.87, 1.66
-dat_H = model_run(p_H, unboundeds) #248.08, 1.65
-dat_A = model_run(p_A, unboundeds) #245.40, 1.21
+#Index for runs
+# 1. = varying bEH, LA fixed to 0.1.
+# 2. = varying bEH, LA fixed to 0.0.
+# 3. = varying bEH, varying LA.
+# 4. = fixed bEH, varying LA.
+# 5. = fixed bEH = 0, fixed LA = 0.1
+# 6. = fixed bEH, LA = 0.
 
-#2. run for parameter sets with interventions - LA set to 0
-p_E_LA_int = copy(p_E)
-p_B_LA_int = copy(p_B)
-p_H_LA_int = copy(p_H)
-p_A_LA_int = copy(p_A)
-p_B_LA_int[:,2] .= 0
-p_H_LA_int[:,2] .= 0
-p_A_LA_int[:,2] .= 0
-p_E_LA_int[:,2] .= 0
-p_E_LA_int[:,11] .= 0.14
-p_B_LA_int[:,11] .= 0.01
-p_H_LA_int[:,11] .= 0.001
-p_A_LA_int[:,11] .= 0.001
-dat_E_noLA = model_run(p_E, unboundeds) #262.72, 2.08
-dat_B_noLA = model_run(p_B, unboundeds) #339.46, 227.85
-dat_H_noLA = model_run(p_H, unboundeds) #248.46, 1.78
-dat_A_noLA = model_run(p_A, unboundeds) #282.00, 2.71
+dat_E_1 = model_run(p_E, unboundeds) #250.2,1.58
+dat_B_1 = model_run(p_B, unboundeds) #256.87, 1.66
+dat_H_1 = model_run(p_H, unboundeds) #248.08, 1.65
+dat_A_1 = model_run(p_A, unboundeds) #245.40, 1.21
 
-#3. run with parameter sets for varying initial values of ΛA and across the bEH range
-p_E_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_B_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_B)[1])
-p_H_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_H)[1])
-p_A_LA_int[:,2] .= rand(Uniform(0.000001, 1.), size(p_A)[1])
+#2. varying bEH, fixed LA = 0.0
+p_E_2 = copy(p_E)
+p_B_2 = copy(p_B)
+p_H_2 = copy(p_H)
+p_A_2 = copy(p_A)
+p_B_2[:,2] .= 0
+p_H_2[:,2] .= 0
+p_A_2[:,2] .= 0
+p_E_2[:,2] .= 0
 
-dat_E_2 = model_run(p_E_LA_int, unboundeds) #249.09, 1.40
-dat_B_2 = model_run(p_B_LA_int, unboundeds) #612.57, 1.60
-dat_H_2 = model_run(p_H_LA_int, unboundeds) #248.13, 1.63
-dat_A_2 = model_run(p_A_LA_int, unboundeds) #249.70, 1.14
+dat_E_2 = model_run(p_E_2, unboundeds) #262.72, 2.08
+dat_B_2 = model_run(p_B_2, unboundeds) #339.46, 227.85
+dat_H_2 = model_run(p_H_2, unboundeds) #248.46, 1.78
+dat_A_2 = model_run(p_A_2, unboundeds) #282.00, 2.71
 
-#4. run with parameter sets for varying initial values of ΛA and fixed values of bEH
-p_E_LA_int[:,11] .= 0.14
-p_B_LA_int[:,11] .= 0.01
-p_H_LA_int[:,11] .= 0.001
-p_A_LA_int[:,11] .= 0.001
+#3. varying LA, varying bEH
+p_E_3 = copy(p_E)
+p_B_3 = copy(p_B)
+p_H_3 = copy(p_H)
+p_A_3 = copy(p_A)
+p_E_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
+p_B_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_B)[1])
+p_H_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_H)[1])
+p_A_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_A)[1])
 
-dat_E_3 = model_run(p_E_LA_int, unboundeds) #249.09, 1.40
-dat_B_3 = model_run(p_B_LA_int, unboundeds) #612.57, 1.60
-dat_H_3 = model_run(p_H_LA_int, unboundeds) #248.13, 1.63
-dat_A_3 = model_run(p_A_LA_int, unboundeds) #249.70, 1.14
+dat_E_3 = model_run(p_E_3, unboundeds) #249.09, 1.40
+dat_B_3 = model_run(p_B_3, unboundeds) #612.57, 1.60
+dat_H_3 = model_run(p_H_3, unboundeds) #248.13, 1.63
+dat_A_3 = model_run(p_A_3, unboundeds) #249.70, 1.14
 
-#5. Run with betEH set to 0 and LA set to 0.1
-p_E_bEHint = copy(p_E)
-p_E_bEHint[:,11] .= 0
-p_B_bEHint = copy(p_B)
-p_B_bEHint[:,11] .= 0
-p_H_bEHint = copy(p_H)
-p_H_bEHint[:,11] .= 0
-p_A_bEHint = copy(p_A)
-p_A_bEHint[:,11] .= 0
-dat_E_nobEH = model_run(p_E_bEHint, unboundeds) #262.72, 2.08
-dat_B_nobEH = model_run(p_B_bEHint, unboundeds) #339.46, 227.85
-dat_H_nobEH = model_run(p_H_bEHint, unboundeds) #248.46, 1.78
-dat_A_nobEH = model_run(p_A_bEHint, unboundeds) #282.00, 2.71
+#4. fixed bEH, varying LA
+p_E_4 = copy(p_E_3)
+p_B_4 = copy(p_B_3)
+p_H_4 = copy(p_H_3)
+p_A_4 = copy(p_A_3)
+p_E_4[:,11] .= 0.14
+p_B_4[:,11] .= 0.01
+p_H_4[:,11] .= 0.001
+p_A_4[:,11] .= 0.001
+
+dat_E_4 = model_run(p_E_4, unboundeds) #249.09, 1.40
+dat_B_4 = model_run(p_B_4, unboundeds) #612.57, 1.60
+dat_H_4 = model_run(p_H_4, unboundeds) #248.13, 1.63
+dat_A_4 = model_run(p_A_4, unboundeds) #249.70, 1.14
+
+#5. fixed bEH = 0, fixed LA = 0.1
+p_E_5 = copy(p_E)
+p_B_5 = copy(p_B)
+p_H_5 = copy(p_H)
+p_A_5 = copy(p_A)
+p_E_5[:,11] .= 0
+p_B_5[:,11] .= 0
+p_H_5[:,11] .= 0
+p_A_5[:,11] .= 0
+dat_E_5 = model_run(p_E_5, unboundeds) #262.72, 2.08
+dat_B_5 = model_run(p_B_5, unboundeds) #339.46, 227.85
+dat_H_5 = model_run(p_H_5, unboundeds) #248.46, 1.78
+dat_A_5 = model_run(p_A_5, unboundeds) #282.00, 2.71
+
+#6. fixed bEH, fixed LA = 0
+p_E_6 = copy(p_E_4)
+p_B_6 = copy(p_B_4)
+p_H_6 = copy(p_H_4)
+p_A_6 = copy(p_A_4)
+p_B_6[:,2] .= 0
+p_H_6[:,2] .= 0
+p_A_6[:,2] .= 0
+p_E_6[:,2] .= 0
+dat_E_6 = model_run(p_E_6, unboundeds) #262.72, 2.08
+dat_B_6 = model_run(p_B_6, unboundeds) #339.46, 227.85
+dat_H_6 = model_run(p_H_6, unboundeds) #248.46, 1.78
+dat_A_6 = model_run(p_A_6, unboundeds) #282.00, 2.71
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
@@ -251,22 +277,29 @@ function get_impact(dat1, dat2)
     end
 end
 
-impact_E = [get_impact(dat_E[i,2], dat_E_noLA[i,2]) for i in 1:size(p_E)[1]]
-impact_B = [get_impact(dat_B[i,2], dat_B_noLA[i,2]) for i in 1:size(p_B)[1]]
-impact_H = [get_impact(dat_H[i,2], dat_H_noLA[i,2]) for i in 1:size(p_H)[1]]
-impact_A = [get_impact(dat_A[i,2], dat_A_noLA[i,2]) for i in 1:size(p_A)[1]]
+#1.fixed LA intervention, varying bEH
+impact_E = [get_impact(dat_E_1[i,2], dat_E_2[i,2]) for i in 1:size(p_E)[1]]
+impact_B = [get_impact(dat_B_1[i,2], dat_B_2[i,2]) for i in 1:size(p_B)[1]]
+impact_H = [get_impact(dat_H_1[i,2], dat_H_2[i,2]) for i in 1:size(p_H)[1]]
+impact_A = [get_impact(dat_A_1[i,2], dat_A_2[i,2]) for i in 1:size(p_A)[1]]
 
-#2. for varyng LA -> 0.0
-impact_E_2 = [get_impact(dat_E_2[i,2], dat_E_noLA[i,2]) for i in 1:size(p_E)[1]]
-impact_B_2 = [get_impact(dat_B_2[i,2], dat_B_noLA[i,2]) for i in 1:size(p_B)[1]]
-impact_H_2 = [get_impact(dat_H_2[i,2], dat_H_noLA[i,2]) for i in 1:size(p_H)[1]]
-impact_A_2 = [get_impact(dat_A_2[i,2], dat_A_noLA[i,2]) for i in 1:size(p_A)[1]]
+#2. varyng LA intervention, varying bEH
+impact_E_2 = [get_impact(dat_E_3[i,2], dat_E_2[i,2]) for i in 1:size(p_E)[1]]
+impact_B_2 = [get_impact(dat_B_3[i,2], dat_B_2[i,2]) for i in 1:size(p_B)[1]]
+impact_H_2 = [get_impact(dat_H_3[i,2], dat_H_2[i,2]) for i in 1:size(p_H)[1]]
+impact_A_2 = [get_impact(dat_A_3[i,2], dat_A_2[i,2]) for i in 1:size(p_A)[1]]
 
-#3. for varying initial bEH values
-impact_bEH_E = [get_impact(dat_E[i,2], dat_E_nobEH[i,2]) for i in 1:size(p_E)[1]]
-impact_bEH_B = [get_impact(dat_B[i,2], dat_B_nobEH[i,2]) for i in 1:size(p_B)[1]]
-impact_bEH_A = [get_impact(dat_A[i,2], dat_A_nobEH[i,2]) for i in 1:size(p_A)[1]]
-impact_bEH_H = [get_impact(dat_H[i,2], dat_H_nobEH[i,2]) for i in 1:size(p_H)[1]]
+#3. varying bEH intervention, fixed LA
+impact_bEH_E = [get_impact(dat_E_1[i,2], dat_E_5[i,2]) for i in 1:size(p_E)[1]]
+impact_bEH_B = [get_impact(dat_B_1[i,2], dat_B_5[i,2]) for i in 1:size(p_B)[1]]
+impact_bEH_A = [get_impact(dat_A_1[i,2], dat_A_5[i,2]) for i in 1:size(p_A)[1]]
+impact_bEH_H = [get_impact(dat_H_1[i,2], dat_H_5[i,2]) for i in 1:size(p_H)[1]]
+
+#4. varying LA intervention, fixed bEH
+impact_E_3 = [get_impact(dat_E_4[i,2], dat_E_6[i,2]) for i in 1:size(p_E)[1]]
+impact_B_3 = [get_impact(dat_B_4[i,2], dat_B_6[i,2]) for i in 1:size(p_B)[1]]
+impact_H_3 = [get_impact(dat_H_4[i,2], dat_H_6[i,2]) for i in 1:size(p_H)[1]]
+impact_A_3 = [get_impact(dat_A_4[i,2], dat_A_6[i,2]) for i in 1:size(p_A)[1]]
 
 #Did simulations reach target RH of 0.65 - 0.75?
 n_target_B = [ifelse(0.65 < dat_B[i,2] <0.75, 1, 0) for i in 1:size(p_B)[1]]
@@ -290,9 +323,9 @@ R"""
 source("M:/Github/animal-human-env-model/RGetPercAndPlot.R")
 """
 
-@rput lower_bin p_E p_A p_B p_H n_target_A n_target_B n_target_E n_target_H
-@rput p_E_LA_int p_A p_B p_H
-@rput impact_A impact_B impact_E impact_H impact_A_2 impact_B_2 impact_E_2 impact_H_2 n_lowimpact_A n_lowimpact_B n_lowimpact_E n_lowimpact_H
+@rput lower_bin p_E p_A p_B p_H p_E_3 p_A_3 p_B_3 p_H_3 p_E_4 p_A_4 p_B_4 p_H_4
+@rput n_target_A n_target_B n_target_E n_target_H n_lowimpact_A n_lowimpact_B n_lowimpact_E n_lowimpact_H
+@rput impact_A impact_B impact_E impact_H impact_A_2 impact_B_2 impact_E_2 impact_H_2 impact_A_3 impact_B_3 impact_E_3 impact_H_3
 @rput impact_bEH_A impact_bEH_B impact_bEH_E impact_bEH_H
 
 # Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
@@ -316,21 +349,21 @@ bEHLH_df_H = get_perc_target(lower_bin, p_H[, c(11, 1)], n_target_H)
 
 #plotting!
 R"""
-p1 = plot_heatmap(bEHmuE_df_E, c('bEH', 'muE'), '% Target Achieved, ts = E', '', limits = c(0, 0.5))
-p2 = plot_heatmap(bEHmuH_df_E, c('bEH', 'muH'), '% Target Achieved, ts = E', '', limits = c(0, 0.5))
-p3 = plot_heatmap(bEHLH_df_E, c('bEH', 'LH'), '% Target Achieved, ts = E', '', limits = c(0, 0.5))
+p1 = plot_heatmap(bEHmuE_df_E, c('bEH', 'muE'), '% Target Achieved, ts = E', '', limits = c(0, 0.75))
+p2 = plot_heatmap(bEHmuH_df_E, c('bEH', 'muH'), '% Target Achieved, ts = E', '', limits = c(0, 0.75))
+p3 = plot_heatmap(bEHLH_df_E, c('bEH', 'LH'), '% Target Achieved, ts = E', '', limits = c(0, 0.75))
 
-p4 = plot_heatmap(bEHmuE_df_B, c('bEH', 'muE'), '% Target Achieved, ts = B', '', limits = c(0, 0.5))
-p5 = plot_heatmap(bEHmuH_df_B, c('bEH', 'muH'), '% Target Achieved, ts = B', '', limits = c(0, 0.5))
-p6 = plot_heatmap(bEHLH_df_B, c('bEH', 'LH'), '% Target Achieved, ts = B', '', limits = c(0, 0.5))
+p4 = plot_heatmap(bEHmuE_df_B, c('bEH', 'muE'), '% Target Achieved, ts = B', '', limits = c(0, 0.75))
+p5 = plot_heatmap(bEHmuH_df_B, c('bEH', 'muH'), '% Target Achieved, ts = B', '', limits = c(0, 0.75))
+p6 = plot_heatmap(bEHLH_df_B, c('bEH', 'LH'), '% Target Achieved, ts = B', '', limits = c(0, 0.75))
 
-p7 = plot_heatmap(bEHmuE_df_H, c('bEH', 'muE'), '% Target Achieved, ts = H', '', limits = c(0, 0.5))
-p8 = plot_heatmap(bEHmuH_df_H, c('bEH', 'muH'), '% Target Achieved, ts = H', '', limits = c(0, 0.5))
-p9 = plot_heatmap(bEHLH_df_H, c('bEH', 'LH'), '% Target Achieved, ts = H', '', limits = c(0, 0.5))
+p7 = plot_heatmap(bEHmuE_df_H, c('bEH', 'muE'), '% Target Achieved, ts = H', '', limits = c(0, 0.75))
+p8 = plot_heatmap(bEHmuH_df_H, c('bEH', 'muH'), '% Target Achieved, ts = H', '', limits = c(0, 0.75))
+p9 = plot_heatmap(bEHLH_df_H, c('bEH', 'LH'), '% Target Achieved, ts = H', '', limits = c(0, 0.75))
 
-p10 = plot_heatmap(bEHmuE_df_A, c('bEH', 'muE'), '% Target Achieved, ts = A', '', limits = c(0, 0.5))
-p11 = plot_heatmap(bEHmuH_df_A, c('bEH', 'muH'), '% Target Achieved, ts = A', '', limits = c(0, 0.5))
-p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '', limits = c(0, 0.5))
+p10 = plot_heatmap(bEHmuE_df_A, c('bEH', 'muE'), '% Target Achieved, ts = A', '', limits = c(0, 0.75))
+p11 = plot_heatmap(bEHmuH_df_A, c('bEH', 'muH'), '% Target Achieved, ts = A', '', limits = c(0, 0.75))
+p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '', limits = c(0, 0.75))
 """
 
 R"""
@@ -340,7 +373,6 @@ ptaplot <- grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12, nrow = 4, ncol =
 """
 
 #Conclusions 2: impact of reducing LA is low for parameter combinations of interest
-@rput impact_E impact_B impact_A impact_H n_lowimpact_E n_lowimpact_B n_lowimpact_A n_lowimpact_H
 R"""
 bEHmuE_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 15)], n_lowimpact_E)
 bEHmuH_df_E_low_impact = get_perc_target(lower_bin, p_E[, c(11, 13)], n_lowimpact_E)
@@ -418,13 +450,13 @@ p32 = plot_heatmap(bEHLH_df_H_impact, c('bEH', 'LH'), 'Mean impact, ts = H', '',
 
 p33 = plot_heatmap(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
 p34 = plot_heatmap(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
-p4 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
+p35 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '', limits = c(0, 0.4))
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
 miplot = grid.arrange(p25_1,p25,p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,nrow=4,ncol=3)
-dev.off()
+#dev.off()
 """
 
 R"""
@@ -450,10 +482,10 @@ viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p42,p43,p44,p45,p46,p47,nrow=4,nco
 """
 
 R"""
-impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
-impact_bEHLA_H = get_mean_var(lower_bin, p_H[, c(11, 2)], impact_H_2)
-impact_bEHLA_A = get_mean_var(lower_bin, p_A[, c(11, 2)], impact_A_2)
-impact_bEHLA_B = get_mean_var(lower_bin, p_B[, c(11, 2)], impact_B_2)
+impact_bEHLA_E = get_mean_var(lower_bin, p_E_3[, c(11, 2)], impact_E_2)
+impact_bEHLA_H = get_mean_var(lower_bin, p_H_3[, c(11, 2)], impact_H_2)
+impact_bEHLA_A = get_mean_var(lower_bin, p_A_3[, c(11, 2)], impact_A_2)
+impact_bEHLA_B = get_mean_var(lower_bin, p_B_3[, c(11, 2)], impact_B_2)
 
 p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
 p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '', limits = c(0.,max(impact_bEHLA_B$mean)))
@@ -467,55 +499,52 @@ p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A'
 """
 
 R"""
-#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
-#miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
-#dev.off()
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
+miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
+dev.off()
 
 #svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
-viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
+#viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
 #dev.off()
 """
 
 R"""
-impact_bEHLA_E = get_mean_var(lower_bin, p_E[, c(11, 2)], impact_E_2)
-p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
-"""
+df_E <- data.frame(param_val = c(p_E[1:10000,11],  p_E_4[1:10000,2]),
+                   param = rep(c("beH", "LA"), each = 10000),
+                   impact = c(impact_bEH_E[1:10000], impact_E_3[1:10000]))
+df_A <- data.frame(param_val = c(p_A[1:10000,11],  p_A_4[1:10000,2]),
+                  param = rep(c("beH", "LA"), each = 10000),
+                  impact = c(impact_bEH_A[1:10000], impact_A_3[1:10000]))
+df_B <- data.frame(param_val = c(p_B[1:10000,11],  p_B_4[1:10000,2]),
+                 param = rep(c("beH", "LA"), each = 10000),
+                 impact = c(impact_bEH_B[1:10000], impact_B_3[1:10000]))
+df_H <- data.frame(param_val = c(p_H[1:10000,11],  p_H_4[1:10000,2]),
+                   param = rep(c("beH", "LA"), each = 10000),
+                   impact = c(impact_bEH_H[1:10000], impact_H_3[1:10000]))
 
-R"""
-df_E <- data.frame(bEH = p_E[1:10000,11], LA = p_E[1:10000,2], impact = impact_bEH_E[1:10000])
-df_B <- data.frame(bEH = p_B[1:10000,11], LA = p_B[1:10000,2], impact = impact_bEH_B[1:10000])
-df_A <- data.frame(bEH = p_A[1:10000,11], LA = p_A[1:10000,2], impact = impact_bEH_A[1:10000])
-df_H <- data.frame(bEH = p_H[1:10000,11], LA = p_H[1:10000,2], impact = impact_bEH_H[1:10000])
+nice_plot <- function(df, ts) {
+    ggplot(df, aes(param_val, impact, col = param)) +
+                    geom_point(shape = 1) +
+                    labs(x = "Parameter value",
+                         y = "Impact",
+                         col = "Parameter targeted \nby intervention",
+                        title = paste("Transmission scenario: ", ts, sep = "")) +
+                    geom_smooth(method = "loess", colour = "black") +
+                    facet_grid(.~param) +
+                    theme_bw()
+}
 
-p49 <- ggplot(df_E, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = E") #+
-                #geom_smooth(data = subset(df_E, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
-p50 <- ggplot(df_E, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = E") #+
-                #geom_smooth(data = subset(df_E, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
+p49 <- nice_plot(df_E, "Environment dominated")
 
-p51 <- ggplot(df_B, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = B")#+
-                #geom_smooth(data = subset(df_B, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
-p52 <- ggplot(df_B, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = B")#+
-                #geom_smooth(data = subset(df_B, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
+p50 <- nice_plot(df_H, "Human dominated")
 
-p53 <- ggplot(df_A, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = A")#+
-                #geom_smooth(data = subset(df_A, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
-p54 <- ggplot(df_A, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = A")#+
-                #geom_smooth(data = subset(df_A, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
+p51 <- nice_plot(df_A, "Animal dominated")
 
-p55 <- ggplot(df_H, aes(bEH, impact)) + geom_point(shape = 1, col = "green") + labs(title = "ts = H")#+
-                #geom_smooth(data = subset(df_H, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
-p56 <- ggplot(df_H, aes(LA, impact)) + geom_point(shape = 1, col = "red") + labs(title = "ts = H")#+
-                #geom_smooth(data = subset(df_H, impact > 0),
-                #    method = "glm", method.args = list(family = "binomial"))
+p52 <- nice_plot(df_B, "Balanced")
 
-grid.arrange(p49, p50, p51, p52, p53, p54, p55, p56, nrow = 4)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/bEHLAimpactcomparison.svg', height=12, width = 7)
+bEHLAimpactcomparison = grid.arrange(p49, p50, p51, p52, nrow = 4)
+dev.off()
 """
 
 #What is the range of impacts?
@@ -546,23 +575,4 @@ RH <- data.frame(ts = c(rep('E', length(dat_E_bEH_target)),
                         dat_H_bEH_target))
 ggplot(RH, aes(ts, RH)) + geom_boxplot() +
     geom_hline(yintercept = 0.71)
-"""
-
-#Investigate negative impacts
-findall(0 .> impact_B_2)
-
-minimum(impact_B_2)
-
-findall(impact_B_2 .< 0)
-
-R"hist(impact_B_2)"
-R"min(impact_B_2)"
-R"min(df_B$impact)"
-
-
-R"hist(impact_bEH_B)"
-R"df_B[df_B$impact < 0,]"
-
-R"""
-ggplot(df_B, aes(bEH, impact, col = LA)) + geom_point(shape = 1)
 """
