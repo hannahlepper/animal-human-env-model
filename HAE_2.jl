@@ -186,6 +186,7 @@ end
 # 4. = fixed bEH, varying LA.
 # 5. = fixed bEH = 0, fixed LA = 0.1
 # 6. = fixed bEH, LA = 0.
+# 7. = fixed bEH, fixed LA = 0.1
 
 dat_E_1 = model_run(p_E, unboundeds) #250.2,1.58
 dat_B_1 = model_run(p_B, unboundeds) #256.87, 1.66
@@ -264,6 +265,20 @@ dat_E_6 = model_run(p_E_6, unboundeds) #262.72, 2.08
 dat_B_6 = model_run(p_B_6, unboundeds) #339.46, 227.85
 dat_H_6 = model_run(p_H_6, unboundeds) #248.46, 1.78
 dat_A_6 = model_run(p_A_6, unboundeds) #282.00, 2.71
+
+#7. fixed bEH = ts, fixed LA = 0.1
+p_E_7 = copy(p_E_6)
+p_B_7 = copy(p_B_6)
+p_H_7 = copy(p_H_6)
+p_A_7 = copy(p_A_6)
+p_B_7[:,2] .= 0.1
+p_H_7[:,2] .= 0.1
+p_A_7[:,2] .= 0.1
+p_E_7[:,2] .= 0.1
+dat_E_7 = model_run(p_E_7, unboundeds) #262.72, 2.08
+dat_B_7 = model_run(p_B_7, unboundeds) #339.46, 227.85
+dat_H_7 = model_run(p_H_7, unboundeds) #248.46, 1.78
+dat_A_7 = model_run(p_A_7, unboundeds) #282.00, 2.71
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
@@ -487,26 +502,28 @@ impact_bEHLA_H = get_mean_var(lower_bin, p_H_3[, c(11, 2)], impact_H_2)
 impact_bEHLA_A = get_mean_var(lower_bin, p_A_3[, c(11, 2)], impact_A_2)
 impact_bEHLA_B = get_mean_var(lower_bin, p_B_3[, c(11, 2)], impact_B_2)
 
-p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,max(impact_bEHLA_E$mean)))
-p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '', limits = c(0.,max(impact_bEHLA_B$mean)))
-p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '', limits = c(0.,max(impact_bEHLA_H$mean)))
-p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '', limits = c(0.,max(impact_bEHLA_A$mean)))
+p48 = plot_heatmap(impact_bEHLA_E, c('bEH', 'LA'), 'Mean impact, ts = E', '', limits = c(0.,0.126))#max(impact_bEHLA_E$mean)))
+p49 = plot_heatmap(impact_bEHLA_B, c('bEH', 'LA'), 'Mean impact, ts = B', '', limits = c(0.,0.126))#max(impact_bEHLA_B$mean)))
+p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '', limits = c(0.,0.126))#max(impact_bEHLA_H$mean)))
+p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '', limits = c(0.,0.126))#max(impact_bEHLA_A$mean)))
 
-p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '', limits = c(0.,max(impact_bEHLA_E$var)))
-p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '', limits = c(0.,max(impact_bEHLA_B$var)))
-p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '', limits = c(0.,max(impact_bEHLA_H$var)))
-p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '', limits = c(0.,max(impact_bEHLA_A$var)))
+p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '', limits = c(0.,0.126))#max(impact_bEHLA_E$var)))
+p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '', limits = c(0.,0.126))#max(impact_bEHLA_B$var)))
+p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '', limits = c(0.,0.126))#max(impact_bEHLA_H$var)))
+p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '', limits = c(0.,0.126))#max(impact_bEHLA_A$var)))
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 7)
-miLAplot = grid.arrange(p48, p49, p50, p51, nrow=4)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=5, width = 21)
+miLAplot = grid.arrange(p48, p49, p50, p51, nrow=1)
 dev.off()
 
 #svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
 #viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
 #dev.off()
 """
+
+#Plot just the Human dominated and environment dominated scenarios
 
 R"""
 df_E <- data.frame(param_val = c(p_E[1:10000,11],  p_E_4[1:10000,2]),
@@ -542,37 +559,47 @@ p51 <- nice_plot(df_A, "Animal dominated")
 
 p52 <- nice_plot(df_B, "Balanced")
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/bEHLAimpactcomparison.svg', height=12, width = 7)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/bEHLAimpactcomparison.svg', height=12, width = 7)
 bEHLAimpactcomparison = grid.arrange(p49, p50, p51, p52, nrow = 4)
-dev.off()
+#dev.off()
 """
 
 #What is the range of impacts?
 #Get parameter sets with +- 10% of bEH value of that transmission scenario
-bEH_E = findall((0.95 * 0.14) .< p_E[:,11] .< (1.05 * 0.14))
-dat_E_bEH_target = dat_E[bEH_E,2]
+#bEH_E = findall((0.95 * 0.14) .< p_E[:,11] .< (1.05 * 0.14))[1:1:200]
+#dat_E_bEH_target = dat_E[bEH_E,2]
 
-bEH_B = findall((0.95 * 0.01) .< p_B[:,11] .< (1.05 * 0.01))
-dat_B_bEH_target = dat_B[bEH_B,2]
+#bEH_B = findall((0.95 * 0.01) .< p_B[:,11] .< (1.05 * 0.01))[1:1:200]
+#dat_B_bEH_target = dat_B[bEH_B,2]
 
-bEH_A = findall((0.95 * 0.001) .< p_A[:,11] .< (1.05 * 0.001))
-dat_A_bEH_target = dat_A[bEH_A,2]
+#bEH_A = findall((0.95 * 0.001) .< p_A[:,11] .< (1.05 * 0.001))[1:1:200]
+#dat_A_bEH_target = dat_A[bEH_A,2]
 
-bEH_H = findall((0.95 * 0.001) .< p_H[:,11] .< (1.05 * 0.001))
-dat_H_bEH_target = dat_H[bEH_H,2]
+#bEH_H = findall((0.95 * 0.001) .< p_H[:,11] .< (1.05 * 0.001))[1:1:200]
+#dat_H_bEH_target = dat_H[bEH_H,2]
 
 #Get together RH measures for these indices
-@rput dat_E_bEH_target dat_B_bEH_target dat_H_bEH_target dat_A_bEH_target
+
+
+@rput dat_E_7 dat_B_7 dat_H_7 dat_A_7
 
 R"""
-RH <- data.frame(ts = c(rep('E', length(dat_E_bEH_target)),
-                        rep('B', length(dat_B_bEH_target)),
-                        rep('A', length(dat_A_bEH_target)),
-                        rep('H', length(dat_H_bEH_target))),
-                 RH = c(dat_E_bEH_target,
-                        dat_B_bEH_target,
-                        dat_A_bEH_target,
-                        dat_H_bEH_target))
-ggplot(RH, aes(ts, RH)) + geom_boxplot() +
-    geom_hline(yintercept = 0.71)
+RH <- data.frame(ts = c(rep('E', 10000),
+                        rep('B', 10000),
+                        rep('A', 10000),
+                        rep('H', 10000)),
+                 RH = c(dat_E_7[sample(1:2000000,10000, replace = FALSE),2],
+                        dat_B_7[sample(1:2000000,10000, replace = FALSE),2],
+                        dat_A_7[sample(1:2000000,10000, replace = FALSE),2],
+                        dat_H_7[sample(1:2000000,10000, replace = FALSE),2]))
+
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=12, width = 12)
+ggplot(RH, aes(ts, RH)) +
+    geom_violin(outlier.shape = NA) +
+    geom_boxplot(width = 0.1, outlier.shape = NA) +
+    geom_hline(yintercept = 0.71) +
+    theme_bw()
+#dev.off()
 """
+
+R"dev.off()"
