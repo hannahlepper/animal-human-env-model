@@ -593,12 +593,17 @@ RH <- data.frame(ts = c(rep('E', 10000),
                         dat_A_7[sample(1:2000000,10000, replace = FALSE),2],
                         dat_H_7[sample(1:2000000,10000, replace = FALSE),2]))
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=12, width = 12)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=7, width = 9.5)
 ggplot(RH, aes(ts, RH)) +
     geom_violin(outlier.shape = NA) +
     geom_boxplot(width = 0.1, outlier.shape = NA) +
     geom_hline(yintercept = 0.71) +
-    theme_bw()
+    theme(panel.background = element_rect(fill = "white", colour = NA),
+          panel.border = element_rect(fill = NA, colour= "black"),
+          panel.grid = element_line(colour = NA),
+          panel.grid.minor = element_line(colour = NA),
+          strip.background = element_rect(fill = NA, colour = NA),
+          axis.text = element_text(size = 15))
 #dev.off()
 """
 
