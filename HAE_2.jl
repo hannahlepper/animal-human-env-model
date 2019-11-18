@@ -18,7 +18,6 @@ tspan = (0.0, 1000.)
 p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.001, 0.1, 0.1, 0.01, 0.01, 0.1, 0.1, 0.1, 0.2]
 prob = ODEProblem(unboundeds, u0, tspan, p)
 sol = solve(prob)
-plotlyjs() #plotting backend
 plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
 
 #sample paramter space - for all transmission scenarios.
@@ -317,10 +316,10 @@ impact_H_3 = [get_impact(dat_H_4[i,2], dat_H_6[i,2]) for i in 1:size(p_H)[1]]
 impact_A_3 = [get_impact(dat_A_4[i,2], dat_A_6[i,2]) for i in 1:size(p_A)[1]]
 
 #Did simulations reach target RH of 0.65 - 0.75?
-n_target_B = [ifelse(0.65 < dat_B[i,2] <0.75, 1, 0) for i in 1:size(p_B)[1]]
-n_target_H = [ifelse(0.65 < dat_H[i,2] <0.75, 1, 0) for i in 1:size(p_H)[1]]
-n_target_A = [ifelse(0.65 < dat_A[i,2] <0.75, 1, 0) for i in 1:size(p_A)[1]]
-n_target_E = [ifelse(0.65 < dat_E[i,2] <0.75, 1, 0) for i in 1:size(p_E)[1]]
+n_target_B = [ifelse(0.65 < dat_B_1[i,2] <0.75, 1, 0) for i in 1:size(p_B)[1]]
+n_target_H = [ifelse(0.65 < dat_H_1[i,2] <0.75, 1, 0) for i in 1:size(p_H)[1]]
+n_target_A = [ifelse(0.65 < dat_A_1[i,2] <0.75, 1, 0) for i in 1:size(p_A)[1]]
+n_target_E = [ifelse(0.65 < dat_E_1[i,2] <0.75, 1, 0) for i in 1:size(p_E)[1]]
 
 #Did simulations have a low impact of less than 2%?
 n_lowimpact_E = [ifelse(0. < impact_E[i] < 0.02,1,0) for i in 1:size(p_E)[1]]
@@ -514,7 +513,7 @@ p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A'
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=5, width = 21)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=6.5, width = 28.4)
 miLAplot = grid.arrange(p48, p49, p50, p51, nrow=1)
 dev.off()
 
@@ -588,16 +587,18 @@ RH <- data.frame(ts = c(rep('E', 10000),
                         rep('B', 10000),
                         rep('A', 10000),
                         rep('H', 10000)),
+                    bEH = rep(c(0.14, 0.01, 0.0001, 0.0001), each = 10000),
                  RH = c(dat_E_7[sample(1:2000000,10000, replace = FALSE),2],
                         dat_B_7[sample(1:2000000,10000, replace = FALSE),2],
                         dat_A_7[sample(1:2000000,10000, replace = FALSE),2],
                         dat_H_7[sample(1:2000000,10000, replace = FALSE),2]))
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=7, width = 9.5)
-ggplot(RH, aes(ts, RH)) +
-    geom_violin(outlier.shape = NA) +
-    geom_boxplot(width = 0.1, outlier.shape = NA) +
-    geom_hline(yintercept = 0.71) +
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=3.5, width = 7)
+ggplot(RH, aes(y=ts, x=RH, fill = factor(bEH))) +
+    geom_density_ridges(scale=1) +
+    #geom_violin(outlier.shape = NA, kernel = "rectangular") +
+    #geom_boxplot(width = 0.1, outlier.shape = NA) +
+    geom_vline(xintercept = 0.71) +
     theme(panel.background = element_rect(fill = "white", colour = NA),
           panel.border = element_rect(fill = NA, colour= "black"),
           panel.grid = element_line(colour = NA),

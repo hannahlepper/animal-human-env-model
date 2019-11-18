@@ -2,6 +2,7 @@ library(plyr)
 library(tidyverse)
 library(RColorBrewer)
 library(gridExtra)
+library(ggridges)
 
 get_perc_target <- function(lower_bin, p, dat) {
   df <- data.frame(p, dat)
@@ -30,7 +31,7 @@ get_mean_var <- function(lower_bin, p, dat) {
 }
 
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
-myP <- colorRampPalette(c("#330066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"), 
+myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"), 
                         bias = 1.)
 
 plot_heatmap <- function(df, axisnames, plottitle, filltitle, limits) {
@@ -64,7 +65,7 @@ plot_heatmap_var <- function(df, axisnames, plottitle, filltitle, limits) {
 # p <- matrix(rlnorm(1000, meanlog = log(0.01)+2, sdlog = 2), ncol = 2)
 # dat <- rbinom(5000, 1, 0.5)
 # lower_bin <- seq(0., 1., 0.05)
-# 
+ 
 # df <- get_perc_target(lower_bin, p, dat)
 # p1 <- plot_heatmap(df, c("a", "b"), "c", "d", limits = c(0., 1.5))
 # svg("M:/test.svg", height = 12, width = 20)
