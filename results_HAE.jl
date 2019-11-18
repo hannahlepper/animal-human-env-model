@@ -280,8 +280,8 @@ p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A'
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=6.5, width = 28.4)
-miLAplot = grid.arrange(p48, p49, p50, p51, nrow=1)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 16)
+miLAplot = grid.arrange(p48, p49, p50, p51, nrow=2)
 dev.off()
 
 #svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
