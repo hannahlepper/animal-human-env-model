@@ -1,181 +1,4 @@
-using DifferentialEquations
-using Distributions
-using Plots
-using RCall
-
-# model function
-function unboundeds(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βEH, βHE, μH, μA, μE = p
-    du[1] = (1 - RH) * (ΛH + βHH*RH + βAH*RA + βEH*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + βAA*RA + βHA*RH + βEA*RE) - μA*RA
-    du[3] = γH*ΛH + γA*ΛA + βAE*RA + βHE*RH - μE*RE
-end
-
-#check is working - us the same as the mathematica output to 6 decimal places at least
-u0 = [0.0; 0.0; 0.0]
-tspan = (0.0, 1000.)
-p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.001, 0.1, 0.1, 0.01, 0.01, 0.1, 0.1, 0.1, 0.2]
-prob = ODEProblem(unboundeds, u0, tspan, p)
-sol = solve(prob)
-plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
-
-#sample paramter space - for all transmission scenarios.
-#Make a little library for the distributions and parameters for the 4 varying parameters
-#assume will always use lognormal for now...
-struct lnp
-    σ::Float64
-    μ::Float64
-end
-
-struct bp
-    α::Float64
-    β::Float64
-end
-
-struct ts
-    B
-    H
-    E
-    A
-end
-
-struct vp
-    βEH
-    ΛH
-    μE
-    μH
-end
-
-#σ=1.
-#pv = vp(ts(lnp(σ, 0.01), lnp(σ, 0.001),
-#            lnp(σ, 0.14), lnp(σ, 0.001)), #βEH
-#          lnp(σ, 0.1), #ΛH
-#          lnp(σ, 0.2), #μE
-#          lnp(σ, 0.1)) #μH
-
-#beta distribution with mean = parameter selected in transmission scenarios, and var = mean/20
-#parameters estimated from R code
-pv = vp(ts(bp(0.188, 18.612), bp(0.01898, 18.96102),
-          bp(2.268, 13.932), bp(0.01898, 18.96102)), #βEH
-        bp(1.7, 15.3), #ΛH
-        bp(3, 12), #μE
-        bp(1.7, 15.3)) #μH
-
-
-#non varying parameters
-struct f_p
-    ΛA::Float64
-    γH::Float64
-    γA::Float64
-    βHH::ts
-    βAA::ts
-    βHA::ts
-    βAH::ts
-    βAE::ts
-    βEA::ts
-    βHE::ts
-    μA::Float64
-end
-
-pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
-         ts(0.1,0.2,0.001,0.001), #βHH
-         ts(0.1,0.001,0.001,0.2), #βAA
-         ts(0.001,0.2,0.001,0.001), #βHA
-         ts(0.1,0.001,0.001,0.2), #βAH
-         ts(0.1, 0.001, 0.14, 0.2), #βAE
-         ts(0.01, 0.001, 0.14, 0.001), #βEA
-         ts(0.1, 0.2, 0.14, 0.001), #βHE
-         0.1) #μA
-
-#set up parameter set that never changes first
-N = 2000000
-p_initial = zeros(N, 15)
-
-#Parameters that have sampling distributions
-#p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
-#p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
-#p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
-p_initial[:,1] .= rand(Beta(pv.ΛH.α, pv.ΛH.β), N)
-p_initial[:,15] .= rand(Beta(pv.μE.α, pv.μE.β), N)
-p_initial[:,13] .= rand(Beta(pv.μH.α, pv.μH.β), N)
-
-#Parameters that are fixed
-#ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βHE, μA
-p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]'
-
-#Make parameter sets for the different transmission scenarios
-p_initial_B = copy(p_initial)
-p_initial_H = copy(p_initial)
-p_initial_A = copy(p_initial)
-p_initial_E = copy(p_initial)
-
-#Parameters that have sampling distributions
-#p_initial_B[:,11] .= rand(LogNormal(log(pv.βEH.B.μ)+pv.βEH.B.σ, pv.βEH.B.σ), N)
-#p_initial_H[:,11] .= rand(LogNormal(log(pv.βEH.H.μ)+pv.βEH.H.σ, pv.βEH.H.σ), N)
-#p_initial_A[:,11] .= rand(LogNormal(log(pv.βEH.A.μ)+pv.βEH.A.σ, pv.βEH.A.σ), N)
-#p_initial_E[:,11] .= rand(LogNormal(log(pv.βEH.E.μ)+pv.βEH.E.σ, pv.βEH.E.σ), N)
-p_initial_B[:,11] .= rand(Uniform(0.000001, 1.), N)
-p_initial_H[:,11] .= rand(Uniform(0.000001, 1.), N)
-p_initial_A[:,11] .= rand(Uniform(0.000001, 1.), N)
-p_initial_E[:,11] .= rand(Uniform(0.000001, 1.), N)
-
-#Parameters that are fixed
-#βHH, βAA, βHA, βAH, βAE, βEA, βHE
-p_initial_B[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).B for x in [4,5,6,7,8,9,10]]'
-p_initial_H[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).H for x in [4,5,6,7,8,9,10]]'
-p_initial_A[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).A for x in [4,5,6,7,8,9,10]]'
-p_initial_E[:,[5,6,7,8,9,10,12]] .= [getfield(pf,x).E for x in [4,5,6,7,8,9,10]]'
-
-#get rid of negative numbers, or values over 1.5
-function keep_ps(p)
-    sets_LH = p[:,1] .< 1.
-    sets_muH = p[:,13] .< 1.
-    sets_muE = p[:,15] .<1.5
-    keep = findall(sets_LH .& sets_muH .& sets_muE)
-    return p[keep,:]
-end
-p_B = keep_ps(p_initial_B)
-p_H = keep_ps(p_initial_H)
-p_A = keep_ps(p_initial_A)
-p_E = keep_ps(p_initial_E)
-
-plot(
-    histogram(p_B[:,[1,11,13,15]],
-              xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-    histogram(p_H[:,[1,11,13,15]],
-            xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-    histogram(p_A[:,[1,11,13,15]],
-              xticks = range(0, 1; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-    histogram(p_E[:,[1,11,13,15]],
-            xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-    layout = 4)
-
-#now numerically solve for each parameter set
-#function for running model
-function model_run(p, mod)
-    dat = zeros(size(p)[1],2)
-    u0 = [0.0;0.0;0.0]
-    tspan = (0., 500.)
-
-    #run 1
-    @time for i in 1:size(p)[1]
-      prob = ODEProblem(mod, u0, tspan, p[i,:])
-      sol = solve(prob)
-      dat[i, :] .= Array{Float64,1}(map(n -> sol(n)[1], [400,500]))
-    end
-
-    #run 2 - rerun for those possibly not at equilibrium
-    not_eqlm = [abs(dat[i,2] - dat[i,1]) > 0.0000001 for i in 1:size(p)[1]]
-    rerun = findall(not_eqlm)
-    tspan = (0.,10000.)
-    @time for i in rerun
-        prob = ODEProblem(mod, u0, tspan, p[i,:])
-        sol = solve(prob)
-        dat[i, :] .= Array{Float64,1}(map(n -> sol(n)[1], [1900,2000]))
-    end
-    return dat
-end
+import("M:/GitHub\\/animal-human-env-model\\/model_parameters_HAE_2.jl")
 
 #RUN MODELS
 #Index for runs
@@ -192,88 +15,31 @@ dat_B_1 = model_run(p_B, unboundeds) #256.87, 1.66
 dat_H_1 = model_run(p_H, unboundeds) #248.08, 1.65
 dat_A_1 = model_run(p_A, unboundeds) #245.40, 1.21
 
-#2. varying bEH, fixed LA = 0.0
-p_E_2 = copy(p_E)
-p_B_2 = copy(p_B)
-p_H_2 = copy(p_H)
-p_A_2 = copy(p_A)
-p_B_2[:,2] .= 0
-p_H_2[:,2] .= 0
-p_A_2[:,2] .= 0
-p_E_2[:,2] .= 0
-
 dat_E_2 = model_run(p_E_2, unboundeds) #262.72, 2.08
 dat_B_2 = model_run(p_B_2, unboundeds) #339.46, 227.85
 dat_H_2 = model_run(p_H_2, unboundeds) #248.46, 1.78
 dat_A_2 = model_run(p_A_2, unboundeds) #282.00, 2.71
-
-#3. varying LA, varying bEH
-p_E_3 = copy(p_E)
-p_B_3 = copy(p_B)
-p_H_3 = copy(p_H)
-p_A_3 = copy(p_A)
-p_E_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_E)[1])
-p_B_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_B)[1])
-p_H_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_H)[1])
-p_A_3[:,2] .= rand(Uniform(0.000001, 1.), size(p_A)[1])
 
 dat_E_3 = model_run(p_E_3, unboundeds) #249.09, 1.40
 dat_B_3 = model_run(p_B_3, unboundeds) #612.57, 1.60
 dat_H_3 = model_run(p_H_3, unboundeds) #248.13, 1.63
 dat_A_3 = model_run(p_A_3, unboundeds) #249.70, 1.14
 
-#4. fixed bEH, varying LA
-p_E_4 = copy(p_E_3)
-p_B_4 = copy(p_B_3)
-p_H_4 = copy(p_H_3)
-p_A_4 = copy(p_A_3)
-p_E_4[:,11] .= 0.14
-p_B_4[:,11] .= 0.01
-p_H_4[:,11] .= 0.001
-p_A_4[:,11] .= 0.001
-
 dat_E_4 = model_run(p_E_4, unboundeds) #249.09, 1.40
 dat_B_4 = model_run(p_B_4, unboundeds) #612.57, 1.60
 dat_H_4 = model_run(p_H_4, unboundeds) #248.13, 1.63
 dat_A_4 = model_run(p_A_4, unboundeds) #249.70, 1.14
 
-#5. fixed bEH = 0, fixed LA = 0.1
-p_E_5 = copy(p_E)
-p_B_5 = copy(p_B)
-p_H_5 = copy(p_H)
-p_A_5 = copy(p_A)
-p_E_5[:,11] .= 0
-p_B_5[:,11] .= 0
-p_H_5[:,11] .= 0
-p_A_5[:,11] .= 0
 dat_E_5 = model_run(p_E_5, unboundeds) #262.72, 2.08
 dat_B_5 = model_run(p_B_5, unboundeds) #339.46, 227.85
 dat_H_5 = model_run(p_H_5, unboundeds) #248.46, 1.78
 dat_A_5 = model_run(p_A_5, unboundeds) #282.00, 2.71
 
-#6. fixed bEH, fixed LA = 0
-p_E_6 = copy(p_E_4)
-p_B_6 = copy(p_B_4)
-p_H_6 = copy(p_H_4)
-p_A_6 = copy(p_A_4)
-p_B_6[:,2] .= 0
-p_H_6[:,2] .= 0
-p_A_6[:,2] .= 0
-p_E_6[:,2] .= 0
 dat_E_6 = model_run(p_E_6, unboundeds) #262.72, 2.08
 dat_B_6 = model_run(p_B_6, unboundeds) #339.46, 227.85
 dat_H_6 = model_run(p_H_6, unboundeds) #248.46, 1.78
 dat_A_6 = model_run(p_A_6, unboundeds) #282.00, 2.71
 
-#7. fixed bEH = ts, fixed LA = 0.1
-p_E_7 = copy(p_E_6)
-p_B_7 = copy(p_B_6)
-p_H_7 = copy(p_H_6)
-p_A_7 = copy(p_A_6)
-p_B_7[:,2] .= 0.1
-p_H_7[:,2] .= 0.1
-p_A_7[:,2] .= 0.1
-p_E_7[:,2] .= 0.1
 dat_E_7 = model_run(p_E_7, unboundeds) #262.72, 2.08
 dat_B_7 = model_run(p_B_7, unboundeds) #339.46, 227.85
 dat_H_7 = model_run(p_H_7, unboundeds) #248.46, 1.78
@@ -290,6 +56,11 @@ function get_impact(dat1, dat2)
         1 - dat2/(dat1 + 0.0000001) #will get %decrease and %increase here
     end
 end
+
+#What % of simulations reached the targets of interest?
+#Bins for parameters
+lower_bin = [0.:0.05:1;]
+bin_N = size(lower_bin)[1]
 
 #1.fixed LA intervention, varying bEH
 impact_E = [get_impact(dat_E_1[i,2], dat_E_2[i,2]) for i in 1:size(p_E)[1]]
@@ -327,10 +98,6 @@ n_lowimpact_B = [ifelse(0. < impact_B[i] < 0.02,1,0) for i in 1:size(p_B)[1]]
 n_lowimpact_H = [ifelse(0. < impact_H[i] < 0.02,1,0) for i in 1:size(p_H)[1]]
 n_lowimpact_A = [ifelse(0. < impact_A[i] < 0.02,1,0) for i in 1:size(p_A)[1]]
 
-#What % of simulations reached the targets of interest?
-#Bins for parameters
-lower_bin = [0.:0.05:1;]
-bin_N = size(lower_bin)[1]
 
 #Using RCall to get % reaching target
 R"""
