@@ -75,8 +75,8 @@ end
 
 
 #optimise for the different transmission scenarios
-b_res = optimize(dist_b, 0., 1.)
-e_res = optimize(dist_e, 0., 1.)
-h_res = optimize(dist_h, 0., 1.)
-a_res = optimize(dist_a, 0., 1.)
+b_res = optimize(dist_b, 0., 1.) #0.07432092
+e_res = optimize(dist_e, 0., 1.) #0.1420501
+h_res = optimize(dist_h, 0., 1.) #0.2019663
+a_res = optimize(dist_a, 0., 1.) #0.2019663
 #these agree with plots I have made in Mathematica - happy with the results.
