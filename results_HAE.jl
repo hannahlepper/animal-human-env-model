@@ -52,16 +52,16 @@ dat_Bd_7 = model_run(p_Bd_7, unboundeds) #339.46, 227.85
 dat_H_7 = model_run(p_H_7, unboundeds) #248.46, 1.78
 dat_A_7 = model_run(p_A_7, unboundeds) #282.00, 2.71
 
-#SAVE FILES...
+#SAVE/LOAD FILES...
 dat = [dat_E_1, dat_E_2, dat_E_3, dat_E_4, dat_E_5, dat_E_6, dat_E_7,
        dat_B_1, dat_B_2, dat_B_3, dat_B_4, dat_B_5, dat_B_6, dat_B_7,
        dat_Bd_1, dat_Bd_2, dat_Bd_3, dat_Bd_4, dat_Bd_5, dat_Bd_6, dat_Bd_7,
        dat_A_1, dat_A_2, dat_A_3, dat_A_4, dat_A_5, dat_A_6, dat_A_7,
        dat_H_1, dat_H_2, dat_H_3, dat_H_4, dat_H_5, dat_H_6, dat_H_7]
 
-
 using JLD2
-@save "D:/results_workspace.jld" dat
+@save "D:/results_workspace.jld2" dat
+@load "D:/results_workspace.jld2" dat
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
