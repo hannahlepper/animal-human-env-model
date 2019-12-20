@@ -30,6 +30,16 @@ get_mean_var <- function(lower_bin, p, dat) {
   return(df)
 }
 
+summary_df <- function(lower_bin, p, dat, summary_type) {
+  sdf <- NULL
+  summary_function <- ifelse(summary_type == "perc_target", get_perc_target, get_mean_var)
+  pars <- c(15,13,1)
+  for(i in 1:3) {
+    sdf[,i] <- summary_function(lower_bin, p[, c(11,pars[i])], dat)
+  }
+  names(sdf) <- c("")
+}
+
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"), 
                         bias = 1.)
@@ -62,12 +72,12 @@ plot_heatmap_var <- function(df, axisnames, plottitle, filltitle, limits) {
 }
 
 #testing
-# p <- matrix(rlnorm(1000, meanlog = log(0.01)+2, sdlog = 2), ncol = 2)
-# dat <- rbinom(5000, 1, 0.5)
-# lower_bin <- seq(0., 1., 0.05)
+p <- matrix(rlnorm(1000, meanlog = log(0.01)+2, sdlog = 2), ncol = 2)
+dat <- rbinom(5000, 1, 0.5)
+lower_bin <- seq(0., 1., 0.05)
  
-# df <- get_perc_target(lower_bin, p, dat)
-# p1 <- plot_heatmap(df, c("a", "b"), "c", "d", limits = c(0., 1.5))
+df <- get_perc_target(lower_bin, p, dat)
+p1 <- plot_heatmap(df, c("a", "b"), "c", "d", limits = c(0., 1.5))
 # svg("M:/test.svg", height = 12, width = 20)
 # grid.arrange(p1, p1, p1, p1, p1, p1, p1, p1, p1, p1, p1, p1, nrow = 4, ncol = 3)
 # dev.off()

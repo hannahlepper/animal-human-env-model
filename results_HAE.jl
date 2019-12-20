@@ -59,9 +59,29 @@ dat = [dat_E_1, dat_E_2, dat_E_3, dat_E_4, dat_E_5, dat_E_6, dat_E_7,
        dat_A_1, dat_A_2, dat_A_3, dat_A_4, dat_A_5, dat_A_6, dat_A_7,
        dat_H_1, dat_H_2, dat_H_3, dat_H_4, dat_H_5, dat_H_6, dat_H_7]
 
+P = [p_E, p_E_2, p_E_3, p_E_4, p_E_5, p_E_6, p_E_7,
+      p_B, p_B_2, p_B_3, p_B_4, p_B_5, p_B_6, p_B_7,
+      p_Bd, p_Bd_2, p_Bd_3, p_Bd_4, p_Bd_5, p_Bd_6, p_Bd_7,
+      p_A, p_A_2, p_A_3, p_A_4, p_A_5, p_A_6, p_A_7,
+      p_H, p_H_2, p_H_3, p_H_4, p_H_5, p_H_6, p_H_7]
+
 using JLD2
 @save "D:/results_workspace.jld2" dat
+@save "D:/results_workspace_P.jld2" P
+
 @load "D:/results_workspace.jld2" dat
+@load "D:/results_workspace_P.jld2" P
+
+dat_E_1, dat_E_2, dat_E_3, dat_E_4, dat_E_5, dat_E_6, dat_E_7,
+       dat_B_1, dat_B_2, dat_B_3, dat_B_4, dat_B_5, dat_B_6, dat_B_7,
+       dat_Bd_1, dat_Bd_2, dat_Bd_3, dat_Bd_4, dat_Bd_5, dat_Bd_6, dat_Bd_7,
+       dat_A_1, dat_A_2, dat_A_3, dat_A_4, dat_A_5, dat_A_6, dat_A_7,
+       dat_H_1, dat_H_2, dat_H_3, dat_H_4, dat_H_5, dat_H_6, dat_H_7 = dat
+p_E, p_E_2, p_E_3, p_E_4, p_E_5, p_E_6, p_E_7,
+     p_B, p_B_2, p_B_3, p_B_4, p_B_5, p_B_6, p_B_7,
+     p_Bd, p_Bd_2, p_Bd_3, p_Bd_4, p_Bd_5, p_Bd_6, p_Bd_7,
+     p_A, p_A_2, p_A_3, p_A_4, p_A_5, p_A_6, p_A_7,
+     p_H, p_H_2, p_H_3, p_H_4, p_H_5, p_H_6, p_H_7 = P
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
@@ -81,11 +101,11 @@ lower_bin = [0.:0.05:1;]
 bin_N = size(lower_bin)[1]
 
 #1.fixed LA intervention, varying bEH
-impact_E = [get_impact(dat_E_1[i,2], dat_E_2[i,2]) for i in 1:size(p_E)[1]]
-impact_B = [get_impact(dat_B_1[i,2], dat_B_2[i,2]) for i in 1:size(p_B)[1]]
-impact_Bd = [get_impact(dat_Bd_1[i,2], dat_Bd_2[i,2]) for i in 1:size(p_Bd)[1]]
-impact_H = [get_impact(dat_H_1[i,2], dat_H_2[i,2]) for i in 1:size(p_H)[1]]
-impact_A = [get_impact(dat_A_1[i,2], dat_A_2[i,2]) for i in 1:size(p_A)[1]]
+impact_E = [get_impact(dat_E_1[i,2], dat_E_2[i,2]) for i in 1:size(dat_E_1)[1]]
+impact_B = [get_impact(dat_B_1[i,2], dat_B_2[i,2]) for i in 1:size(dat_B_1)[1]]
+impact_Bd = [get_impact(dat_Bd_1[i,2], dat_Bd_2[i,2]) for i in 1:size(dat_Bd_1)[1]]
+impact_H = [get_impact(dat_H_1[i,2], dat_H_2[i,2]) for i in 1:size(dat_H_1)[1]]
+impact_A = [get_impact(dat_A_1[i,2], dat_A_2[i,2]) for i in 1:size(dat_A_1)[1]]
 
 #2. varyng LA intervention, varying bEH
 impact_E_2 = [get_impact(dat_E_3[i,2], dat_E_2[i,2]) for i in 1:size(p_E)[1]]
@@ -184,9 +204,9 @@ p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '', 
 """
 
 R"""
-#svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=12, width = 20)
+svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=20, width = 20)
 ptaplot <- grid.arrange(p1,p2,p3,p4,p5,p6,p4bd,p5bd,p6bd,p7,p8,p9,p10,p11,p12, nrow = 5, ncol = 3)
-#dev.off()
+dev.off()
 """
 
 #Conclusions 2: impact of reducing LA is low for parameter combinations of interest
@@ -235,9 +255,9 @@ p24 = plot_heatmap(bEHLH_df_A_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts
 """
 
 R"""
-#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=12, width = 20)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=20, width = 20)
 liplot = grid.arrange(p13,p14,p15,p16,p17,p18,p16bd,p17bd,p18bd,p19,p20,p21,p22,p23,p24,nrow = 5, ncol = 3)
-#dev.off()
+dev.off()
 """
 
 
@@ -287,9 +307,9 @@ p35 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '',
 """
 
 R"""
-#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=12, width = 20)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=20, width = 20)
 miplot = grid.arrange(p25_1,p25,p26,p27,p28,p29,p27bd,p28bd,p29bd,p30,p31,p32,p33,p34,p35,nrow=5,ncol=3)
-#dev.off()
+dev.off()
 """
 
 R"""
@@ -313,9 +333,9 @@ p45 = plot_heatmap_var(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Impact variance, ts
 p46 = plot_heatmap_var(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Impact variance, ts = A', '', limits = c(0, 0.1))
 p47 = plot_heatmap_var(bEHLH_df_A_impact, c('bEH', 'LH'), 'Impact variance, ts = A', '', limits = c(0, 0.1))
 
-#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viplot.svg', height=12, width = 20)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viplot.svg', height=12, width = 20)
 viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p39bd,p40bd,p41bd,p42,p43,p44,p45,p46,p47,nrow=5,ncol=3)
-#dev.off()
+dev.off()
 """
 
 R"""
@@ -331,23 +351,23 @@ p49bd = plot_heatmap(impact_bEHLA_Bd, c('bEH', 'LA'), 'Mean impact, ts = Bd', ''
 p50 = plot_heatmap(impact_bEHLA_H, c('bEH', 'LA'), 'Mean impact, ts = H', '', limits = c(0.,0.126))#max(impact_bEHLA_H$mean)))
 p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '', limits = c(0.,0.126))#max(impact_bEHLA_A$mean)))
 
-p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '', limits = c(0.,0.126))#max(impact_bEHLA_E$var)))
-p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '', limits = c(0.,0.126))#max(impact_bEHLA_B$var)))
-p53bd = plot_heatmap_var(impact_bEHLA_Bd, c('bEH', 'LA'), 'Impact variance, ts = B'd, '', limits = c(0.,0.126))#max(impact_bEHLA_Bd$var)))
-p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '', limits = c(0.,0.126))#max(impact_bEHLA_H$var)))
-p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '', limits = c(0.,0.126))#max(impact_bEHLA_A$var)))
+#p52 = plot_heatmap_var(impact_bEHLA_E, c('bEH', 'LA'), 'Impact variance, ts = E', '', limits = c(0.,0.126))#max(impact_bEHLA_E$var)))
+#p53 = plot_heatmap_var(impact_bEHLA_B, c('bEH', 'LA'), 'Impact variance, ts = B', '', limits = c(0.,0.126))#max(impact_bEHLA_B$var)))
+#p53bd = plot_heatmap_var(impact_bEHLA_Bd, c('bEH', 'LA'), 'Impact variance, ts = B'd, '', limits = c(0.,0.126))#max(impact_bEHLA_Bd$var)))
+#p54 = plot_heatmap_var(impact_bEHLA_H, c('bEH', 'LA'), 'Impact variance, ts = H', '', limits = c(0.,0.126))#max(impact_bEHLA_H$var)))
+#p55 = plot_heatmap_var(impact_bEHLA_A, c('bEH', 'LA'), 'Impact variance, ts = A', '', limits = c(0.,0.126))#max(impact_bEHLA_A$var)))
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=12, width = 16)
-miLAplot = grid.arrange(p48, p49, p50, p51, nrow=2)
-dev.off()
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=20, width = 5)
+miLAplot = grid.arrange(p48, p49, p49bd, p50, p51, nrow=5)
+#dev.off()
 
 #svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viLAplot.svg', height=12, width = 7)
 #viLAplot = grid.arrange(p52, p53, p54, p55, nrow=4)
 #dev.off()
 """
-
+R"""dev.off()"""
 #Plot just the Human dominated and environment dominated scenarios
 
 R"""
@@ -359,12 +379,22 @@ df_A <- data.frame(param_val = c(p_A[1:10000,11],  p_A_4[1:10000,2]),
                   impact = c(impact_bEH_A[1:10000], impact_A_3[1:10000]))
 df_B <- data.frame(param_val = c(p_B[1:10000,11],  p_B_4[1:10000,2]),
                  param = rep(c("beH", "LA"), each = 10000),
-                 impact = c(impact_bEH_B[1:10000], impact_B_3[1:10000]))
+                  impact = c(impact_bEH_B[1:10000], impact_B_3[1:10000]))
+df_Bd <- data.frame(param_val = c(p_Bd[1:10000,11],  p_Bd_4[1:10000,2]),
+              param = rep(c("beH", "LA"), each = 10000),
+              impact = c(impact_bEH_Bd[1:10000], impact_Bd_3[1:10000]))
 df_H <- data.frame(param_val = c(p_H[1:10000,11],  p_H_4[1:10000,2]),
                    param = rep(c("beH", "LA"), each = 10000),
                    impact = c(impact_bEH_H[1:10000], impact_H_3[1:10000]))
 
-nice_plot <- function(df, ts) {
+df <- rbind.data.frame(df_E, df_A, df_B, df_Bd, df_H) %>%
+    cbind.data.frame(., TS = rep(c("E", "A", "B", "Bd", "H"), each = 20000))
+df <- mutate(df, pv_cut = cut(df$param_val, c(0, 0.095, 0.105, 0.495, 0.505, 1.0)))
+df_low <- df[df$pv_cut == "(0.095,0.105]",]
+df_high <- df[df$pv_cut == "(0.495,0.505]",]
+print(head(df_short))
+
+loess_plot <- function(df, ts) {
     ggplot(df, aes(param_val, impact, col = param)) +
                     geom_point(shape = 1) +
                     labs(x = "Parameter value",
@@ -376,17 +406,18 @@ nice_plot <- function(df, ts) {
                     theme_bw()
 }
 
-p49 <- nice_plot(df_E, "Environment dominated")
-
-p50 <- nice_plot(df_H, "Human dominated")
-
-p51 <- nice_plot(df_A, "Animal dominated")
-
-p52 <- nice_plot(df_B, "Balanced")
+p49 <- loess_plot(df_E, "Environment dominated")
+p50 <- loess_plot(df_H, "Human dominated")
+p51 <- loess_plot(df_A, "Animal dominated")
+p52 <- loess_plot(df_B, "Baseline")
+p52bd <- loess_plot(df_Bd, "Balanced")
 
 #svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/bEHLAimpactcomparison.svg', height=12, width = 7)
-bEHLAimpactcomparison = grid.arrange(p49, p50, p51, p52, nrow = 4)
+#bEHLAimpactcomparison = grid.arrange(p49, p50, p51, p52, p52bd, nrow = 5)
 #dev.off()
+
+ggplot(df_low, aes(TS, impact, col = param)) + geom_boxplot()
+ggplot(df_high, aes(TS, impact, col = param)) + geom_boxplot()
 """
 
 #What is the range of impacts?
@@ -406,20 +437,22 @@ bEHLAimpactcomparison = grid.arrange(p49, p50, p51, p52, nrow = 4)
 #Get together RH measures for these indices
 
 
-@rput dat_E_7 dat_B_7 dat_H_7 dat_A_7
+@rput dat_E_7 dat_B_7 dat_Bd_7 dat_H_7 dat_A_7
 
 R"""
 RH <- data.frame(ts = c(rep('E', 10000),
                         rep('B', 10000),
+                        rep('Bd', 10000),
                         rep('A', 10000),
                         rep('H', 10000)),
-                    bEH = rep(c(0.14, 0.01, 0.0001, 0.0001), each = 10000),
-                 RH = c(dat_E_7[sample(1:2000000,10000, replace = FALSE),2],
-                        dat_B_7[sample(1:2000000,10000, replace = FALSE),2],
-                        dat_A_7[sample(1:2000000,10000, replace = FALSE),2],
-                        dat_H_7[sample(1:2000000,10000, replace = FALSE),2]))
+                    bEH = rep(c(0.14, 0.01, 0.07432092, 0.0001, 0.0001), each = 10000),
+                 RH = c(dat_E_7[sample(1:190000,10000, replace = FALSE),2],
+                        dat_B_7[sample(1:190000,10000, replace = FALSE),2],
+                        dat_Bd_7[sample(1:190000,10000, replace = FALSE),2],
+                        dat_A_7[sample(1:190000,10000, replace = FALSE),2],
+                        dat_H_7[sample(1:190000,10000, replace = FALSE),2]))
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=3.5, width = 7)
+svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/TransmissionScenarioRHVar.svg', height=7, width = 7)
 ggplot(RH, aes(y=ts, x=RH, fill = factor(bEH))) +
     geom_density_ridges(scale=1) +
     #geom_violin(outlier.shape = NA, kernel = "rectangular") +
@@ -431,7 +464,7 @@ ggplot(RH, aes(y=ts, x=RH, fill = factor(bEH))) +
           panel.grid.minor = element_line(colour = NA),
           strip.background = element_rect(fill = NA, colour = NA),
           axis.text = element_text(size = 15))
-#dev.off()
+dev.off()
 """
 
 R"dev.off()"

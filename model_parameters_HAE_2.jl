@@ -12,14 +12,28 @@ function unboundeds(du, u, p, t)
     du[3] = γH*ΛH + γA*ΛA + βAE*RA + βHE*RH - μE*RE
 end
 
-#check is working - us the same as the mathematica output to 6 decimal places at least
+#plot each transmission scenario
 u0 = [0.0; 0.0; 0.0]
 tspan = (0.0, 1000.)
-p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.001, 0.1, 0.1, 0.01, 0.01, 0.1, 0.1, 0.1, 0.2]
-prob = ODEProblem(unboundeds, u0, tspan, p)
-sol = solve(prob)
-plot(sol, ylims=(0.,1.), yticks=0.:.1:1.)
+#       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE
+p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
+p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
+p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
+p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
+p_H =  [0.1, 0.1, 0.001, 0.001, 0.2019663,  0.001,      0.2019663,  0.001,      0.001,      0.001,      0.001,      0.2019663,  0.1, 0.1, 0.2]
+p = [p_B, p_Bd, p_E, p_A, p_H]
 
+R = [solve(ODEProblem(unboundeds, u0, tspan, p[i]))(200)[j] for i in 1:5, j in 1:3]
+
+R"""
+library(ggplot2)
+library(readr)
+RVals <- read_csv("M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/Manuscript\\/Fig\ 1\\/RVals.csv")
+svg('M:/Project folders/Model env compartment/Plots/Manuscript/Fig 1/RVals.svg', height = 3, width = 5)
+ggplot(RVals, aes(TS,Val,fill=R)) + geom_col(position = "dodge")
+#dev.off()
+"""
+R"""dev.off()"""
 #sample paramter space - for all transmission scenarios.
 #Make a little library for the distributions and parameters for the 4 varying parameters
 #assume will always use lognormal for now...
