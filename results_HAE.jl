@@ -66,8 +66,8 @@ P = [p_E, p_E_2, p_E_3, p_E_4, p_E_5, p_E_6, p_E_7,
       p_H, p_H_2, p_H_3, p_H_4, p_H_5, p_H_6, p_H_7]
 
 using JLD2
-@save "D:/results_workspace.jld2" dat
-@save "D:/results_workspace_P.jld2" P
+#@save "D:/results_workspace.jld2" dat
+#@save "D:/results_workspace_P.jld2" P
 
 @load "D:/results_workspace.jld2" dat
 @load "D:/results_workspace_P.jld2" P
@@ -204,9 +204,9 @@ p12 = plot_heatmap(bEHLH_df_A, c('bEH', 'LH'), '% Target Achieved, ts = A', '', 
 """
 
 R"""
-svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=20, width = 20)
+#svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=20, width = 20)
 ptaplot <- grid.arrange(p1,p2,p3,p4,p5,p6,p4bd,p5bd,p6bd,p7,p8,p9,p10,p11,p12, nrow = 5, ncol = 3)
-dev.off()
+#dev.off()
 """
 
 #Conclusions 2: impact of reducing LA is low for parameter combinations of interest
@@ -255,9 +255,9 @@ p24 = plot_heatmap(bEHLH_df_A_low_impact, c('bEH', 'LH'), '% Low (<2) impact, ts
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=20, width = 20)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/liplot.svg', height=20, width = 20)
 liplot = grid.arrange(p13,p14,p15,p16,p17,p18,p16bd,p17bd,p18bd,p19,p20,p21,p22,p23,p24,nrow = 5, ncol = 3)
-dev.off()
+#dev.off()
 """
 
 
@@ -307,9 +307,9 @@ p35 = plot_heatmap(bEHLH_df_A_impact, c('bEH', 'LH'), 'Mean impact, ts = A', '',
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=20, width = 20)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miplot.svg', height=20, width = 20)
 miplot = grid.arrange(p25_1,p25,p26,p27,p28,p29,p27bd,p28bd,p29bd,p30,p31,p32,p33,p34,p35,nrow=5,ncol=3)
-dev.off()
+#dev.off()
 """
 
 R"""
@@ -333,9 +333,9 @@ p45 = plot_heatmap_var(bEHmuE_df_A_impact, c('bEH', 'muE'), 'Impact variance, ts
 p46 = plot_heatmap_var(bEHmuH_df_A_impact, c('bEH', 'muH'), 'Impact variance, ts = A', '', limits = c(0, 0.1))
 p47 = plot_heatmap_var(bEHLH_df_A_impact, c('bEH', 'LH'), 'Impact variance, ts = A', '', limits = c(0, 0.1))
 
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viplot.svg', height=12, width = 20)
-viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p39bd,p40bd,p41bd,p42,p43,p44,p45,p46,p47,nrow=5,ncol=3)
-dev.off()
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/viplot.svg', height=12, width = 20)
+#viplot = grid.arrange(p36,p37,p38,p39,p40,p41,p39bd,p40bd,p41bd,p42,p43,p44,p45,p46,p47,nrow=5,ncol=3)
+#dev.off()
 """
 
 R"""
@@ -359,7 +359,7 @@ p51 = plot_heatmap(impact_bEHLA_A, c('bEH', 'LA'), 'Mean impact, ts = A', '', li
 """
 
 R"""
-svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=20, width = 5)
+#svg('M:/Project\ folders\\/Model\ env\ compartment\\/Plots\\/miLAplot.svg', height=20, width = 5)
 miLAplot = grid.arrange(p48, p49, p49bd, p50, p51, nrow=5)
 #dev.off()
 
