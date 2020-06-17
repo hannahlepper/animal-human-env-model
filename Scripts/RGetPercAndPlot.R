@@ -3,12 +3,13 @@ library(tidyverse)
 library(RColorBrewer)
 library(gridExtra)
 library(ggridges)
+library(patchwork)
 
 get_perc_target <- function(lower_bin, p, dat) {
   df <- data.frame(p, dat)
   names(df) <- c("x", "y", "dat")
-  df <- mutate(df, x_cat = cut(df$x, c(lower_bin, max(df$x)), 
-                               labels = as.character(lower_bin), 
+  df <- mutate(df, x_cat = cut(df$x, c(lower_bin, max(df$x)),
+                               labels = as.character(lower_bin),
                                orderd_result = TRUE)) %>%
     mutate(., y_cat = cut(df$y, c(lower_bin, max(df$y)),
                           labels = as.character(lower_bin),
@@ -20,8 +21,8 @@ get_perc_target <- function(lower_bin, p, dat) {
 get_mean_var <- function(lower_bin, p, dat) {
   df <- data.frame(p, dat)
   names(df) <- c("x", "y", "dat")
-  df <- mutate(df, x_cat = cut(df$x, c(lower_bin, max(df$x)), 
-                               labels = as.character(lower_bin), 
+  df <- mutate(df, x_cat = cut(df$x, c(lower_bin, max(df$x)),
+                               labels = as.character(lower_bin),
                                orderd_result = TRUE)) %>%
     mutate(., y_cat = cut(df$y, c(lower_bin, max(df$y)),
                           labels = as.character(lower_bin),
@@ -40,12 +41,20 @@ summary_df <- function(lower_bin, p, dat, summary_type) {
   names(sdf) <- c("")
 }
 
+prop_sd <- function(p, N) {
+  if(p > 0 & N > 0) {
+    sqrt((p*(1-p)))/sqrt(N)
+  } else {
+    0
+  }
+}
+
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
-myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"), 
+myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"),
                         bias = 1.)
 
 plot_heatmap <- function(df, axisnames, plottitle, filltitle, limits) {
-  ggplot(df, aes(x_cat, y_cat, fill = mean)) + 
+  ggplot(df, aes(x_cat, y_cat, fill = mean)) +
     geom_tile() +
     theme(panel.background = element_rect(fill = "white", colour = NA),
           panel.border = element_rect(fill = NA, colour= "black"),
@@ -55,11 +64,11 @@ plot_heatmap <- function(df, axisnames, plottitle, filltitle, limits) {
           axis.text = element_text(size = 20),
           axis.text.x = element_text(angle = 90)) +
     scale_fill_gradientn(colors = myP(100), limits = limits) +
-    labs(x = axisnames[1], y = axisnames[2], title = plottitle) 
+    labs(x = axisnames[1], y = axisnames[2], title = plottitle)
 }
 
 plot_heatmap_var <- function(df, axisnames, plottitle, filltitle, limits) {
-  ggplot(df, aes(x_cat, y_cat, fill = var)) + 
+  ggplot(df, aes(x_cat, y_cat, fill = var)) +
     geom_tile() +
     theme(panel.background = element_rect(fill = "white", colour = NA),
           panel.border = element_rect(fill = NA, colour= "black"),
@@ -68,14 +77,14 @@ plot_heatmap_var <- function(df, axisnames, plottitle, filltitle, limits) {
           strip.background = element_rect(fill = NA, colour = NA),
           axis.text = element_text(size = 8)) +
     scale_fill_gradientn(colors = myP(100), limits = limits) +
-    labs(x = axisnames[1], y = axisnames[2], title = plottitle) 
+    labs(x = axisnames[1], y = axisnames[2], title = plottitle)
 }
 
 #testing
 p <- matrix(rlnorm(1000, meanlog = log(0.01)+2, sdlog = 2), ncol = 2)
 dat <- rbinom(5000, 1, 0.5)
 lower_bin <- seq(0., 1., 0.05)
- 
+
 df <- get_perc_target(lower_bin, p, dat)
 p1 <- plot_heatmap(df, c("a", "b"), "c", "d", limits = c(0., 1.5))
 # svg("M:/test.svg", height = 12, width = 20)
