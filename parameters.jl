@@ -5,7 +5,6 @@ using Distributions
 
 #initial parameter values
 #       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
-p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
 p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
 p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
 p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
@@ -151,6 +150,9 @@ p_1= map(x -> keep_ps(p_1[x]), 1:5)
 # 7. = fixed bEH, fixed LA = 0.1
 # 8. = varying bEH, low bHA, LA fixed to 0.
 # 9. = varying bEH, low bHA, varying LA.
+# 10. = bEH = 0 AND LA = 0
+# 11. original model - all environmnetal parameters set to 0, otherwise following baseline parameter values
+# 12. original model, with LA set to 0
 
 #2. varying bEH, fixed LA = 0.0
 p_2 = deepcopy(p_1)
@@ -177,13 +179,27 @@ p_6 = map(x -> col_edit(p_6[x],2,0), 1:5)
 p_7 = deepcopy(p_6)
 p_7 = map(x -> col_edit(p_7[x],2,0.1), 1:5)
 
-#8.varying bEH, low bHA, LA fixed to 0. why not all of them at this point
+#8.varying bEH, low bHA, LA fixed to 0.
 p_8 = deepcopy(p_2)
 p_8 = map(x -> col_edit(p_8[x],7, 0.001), 1:5)
 
-#9. varying bEH, low bHA, varying LA. Baseline only
+#9. varying bEH, low bHA, varying LA.
 p_9 = deepcopy(p_8)
 p_9 = map(x -> col_edit(p_9[x],2,rand(Uniform(0.000001, 1.), N)[1:size(p_9[1])[1]]), 1:5)
 
-P = hcat(p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9)
-P[1,1]
+#10. bEH and LA set to 0
+p_10 = deepcopy(p_6)
+p_10 = map(x -> col_edit(p_10[x], 11, 0), 1:5)
+
+P = hcat(p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10)
+Pv = vec(map(x -> vec(x), [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]))
+
+#10. Original model
+p_orig = deepcopy(p_1[1])
+p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
+
+#11. Original model - post intervention
+p_orig_int = deepcopy(p_orig)
+p_orig_int = col_edit(p_orig_int, 2, 0)
+
+p_origs_v = vec(map(x -> vec(x), [p_orig, p_orig_int]))

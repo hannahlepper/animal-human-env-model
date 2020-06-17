@@ -40,5 +40,6 @@ function model_run(p, mod)
 end
 
 
-
-#R = [solve(ODEProblem(unboundeds, u0, tspan, p[i]))(200)[j] for i in 1:5, j in 1:3]
+#for testing
+p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
+@time solve(ODEProblem(unboundeds, u0, tspan, p_B))
