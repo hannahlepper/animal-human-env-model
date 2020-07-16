@@ -126,33 +126,26 @@ function keep_ps(p)
 end
 p_1= map(x -> keep_ps(p_1[x]), 1:5)
 
-# using Plots
-# plot(
-#     histogram(p_B[:,[1,11,13,15]],
-#               xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-#     histogram(p_H[:,[1,11,13,15]],
-#             xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-#     histogram(p_A[:,[1,11,13,15]],
-#               xticks = range(0, 1; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-#     histogram(p_E[:,[1,11,13,15]],
-#             xticks = range(0, 1.; step =0.1),xlims = (0.0, 1.),label = ["LH" "bEH" "mH" "mE"]),
-#     layout = 4)
+#Index for runs
+# Figure 2 data needed
+# 1. = fixed bEH, LA fixed to 0.1.
+# 2. = fixed bEH, LA fixed to 0.0.
+# 3. = fixed bEH, LA fixed to 0.5.
+# 4. = bEH fixed to 0.1, fixed LA = 0.1
+# 5. = bEH fixed to 0.5, fixed LA = 0.1
+# 6. = bEH fixed to 0, fixed LA = 0.1 - also needed for  fig 3.C
 
+#Figure 3 A and B data needed
+# 7. = varying bEH, low bHA, LA fixed to 0.
+# 8. = varying bEH, low bHA, varying LA.
+# 9. = varying bEH, high bHA, LA fixed to 0.
+# 10. = varying bEH, high bHA, varying LA.
 
-#Make struct for all the experiments
-#Index for runs]
-# 1. = varying bEH, LA fixed to 0.1.
-# 2. = varying bEH, LA fixed to 0.0.
-# 3. = varying bEH, varying LA.
-# 4. = fixed bEH, varying LA.
-# 5. = fixed bEH = 0, fixed LA = 0.1
-# 6. = fixed bEH, LA = 0.
-# 7. = fixed bEH, fixed LA = 0.1
-# 8. = varying bEH, low bHA, LA fixed to 0.
-# 9. = varying bEH, low bHA, varying LA.
-# 10. = bEH = 0 AND LA = 0
+#Figure 3C data needed. Make separately so that
 # 11. original model - all environmnetal parameters set to 0, otherwise following baseline parameter values
 # 12. original model, with LA set to 0
+# 13. varying bEH 0 -> 1, LA fixed to 0.1
+# 14. varying bEH 0 -> 1, LA fixed to 0.0
 
 #2. varying bEH, fixed LA = 0.0
 p_2 = deepcopy(p_1)
