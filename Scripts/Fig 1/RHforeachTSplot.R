@@ -1,20 +1,17 @@
-source('RGetPercAndPlot.R')
-mean_impact <- lapply(c(15,13,1), function(p) {
-        lapply(1:5, function(x) {
-            get_perc_target(lower_bin, Pv[[1]][[x]][, c(11,p)], n_target[[x]])
-        })
-})
-names(mean_impact) = c("muE", "muH", "LH")
+#sort out julia's list
+R <- unlist(R)
+#For testing - dummy data
+R = rbeta(3 * 5, 1, 1)
+Rdf <- data.frame(
+        R = R, 
+        R_type = factor(rep(c("R[H]", "R[A]", "R[E]"), times = 5)), 
+        TS = rep(c("Baseline", "Balanced", "Human\ndominated", "Environment\ndominated", "Animal\ndominated"), each = 3))
 
-#plotting!
-bEH_mean_impact_plots <- lapply(c("muE", "muH", "LH"), function(p) {
-    lapply(1:5, function(x) {
-        plot_heatmap(mean_impact[[p]][[x]], c('bEH', p),
-                     paste(c("% Target Achieved, ts = ", c("B", "Bd", "H", "E", "A")[x]), collapse = ""),
-        limits = c(0, 0.75))
-        })
-    })
-
-#svg('M:/Project folders/Model env compartment/Plots/ptaplot.svg', height=20, width = 20)
-wrap_plots(unlist(bEH_mean_impact_plots, recursive = FALSE), ncol = 5)
-#dev.off(
+png("plots/barplotFig1B.png", width = 8, height = 7, units = "cm", res = 300)
+ggplot(Rdf, aes(TS, R, fill = R_type)) + 
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_discrete("", labels = parse(text = levels(Rdf$R_type))) +
+    labs(x = "", y = "Fraction of population carrying\n resistant bacteria") +
+    theme_bw(base_size = 8) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 0.95))
+dev.off()

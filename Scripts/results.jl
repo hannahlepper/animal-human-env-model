@@ -2,22 +2,11 @@
 #
 # @load "D:/results_workspace.jld2" dat
 # @load "D:/results_workspace_P.jld2" P
-#
-# dat_E_1, dat_E_2, dat_E_3, dat_E_4, dat_E_5, dat_E_6, dat_E_7,
-#        dat_B_1, dat_B_2, dat_B_3, dat_B_4, dat_B_5, dat_B_6, dat_B_7,
-#        dat_Bd_1, dat_Bd_2, dat_Bd_3, dat_Bd_4, dat_Bd_5, dat_Bd_6, dat_Bd_7,
-#        dat_A_1, dat_A_2, dat_A_3, dat_A_4, dat_A_5, dat_A_6, dat_A_7,
-#        dat_H_1, dat_H_2, dat_H_3, dat_H_4, dat_H_5, dat_H_6, dat_H_7 = dat
-# p_E, p_E_2, p_E_3, p_E_4, p_E_5, p_E_6, p_E_7,
-#      p_B, p_B_2, p_B_3, p_B_4, p_B_5, p_B_6, p_B_7,
-#      p_Bd, p_Bd_2, p_Bd_3, p_Bd_4, p_Bd_5, p_Bd_6, p_Bd_7,
-#      p_A, p_A_2, p_A_3, p_A_4, p_A_5, p_A_6, p_A_7,
-#      p_H, p_H_2, p_H_3, p_H_4, p_H_5, p_H_6, p_H_7 = P
+
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
 #Get measures of impact
-#1. for fixed LA 0.1 -> 0.0
 function get_impact(dat_pre_int, dat_post_int)
     if !(dat_pre_int==0.) #can't have a 0 in denominator
         1 - dat_post_int/dat_pre_int #will get %decrease and %increase here
@@ -29,10 +18,6 @@ end
 function map_impacts(dat_pre_col, dat_post_col)
     map(x -> get_impact(dat_pre_col[x], dat_post_col[x]), 1:length(dat_pre_col))
 end
-
-#Bins for parameters
-lower_bin = [0.:0.05:1;]
-bin_N = size(lower_bin)[1]
 
 #1.fixed LA intervention, varying bEH
 impact_1 = [map_impacts(dat[i,1][:,2], dat[i,2][:,2]) for i in 1:5]
@@ -73,10 +58,34 @@ n_low_impact = hcat([Int.(impact_1[x] .< 0.02) for x in 1:5])
 using RCall
 R"source('RGetPercAndPlot.R')"
 
-@rput lower_bin
 @rput Pv
 @rput n_target n_low_impact
 @rput impact_1 impact_2 impact_3 impact_4 impact_5 impact_6 impact_7 impact_8 impact_9
+
+#Fig 1 B
+#Bar plot of RH, RA, and RE values - deterministic results
+R = pmap(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(200), 1:5)
+@rput R
+R"source('Scripts/Fig 1/RHforeachTSplot.R')"
+
+#Fig 2 A and B 
+#Compare bEH and LA interventions
+@rput Pv impact_3 impact_4
+R"source('Scripts/Fig 2/fig2.R')"
+
+#Fig 3 A, B and apendix
+#Heatmaps of impact as LA and bEH changes, for two levels of bHA
+#Bins for parameters
+lower_bin = [0.:0.05:1;]
+bin_N = size(lower_bin)[1]
+
+
+
+
+
+
+
+
 
 # Conclusion 1: realistic RHs are attainable for environmental transmission scenarios
 R"""
@@ -147,6 +156,13 @@ miLAplot = wrap_plots(mean_impact_plot_list)
 """
 R"""dev.off()"""
 
+
+
+
+
+
+
+
 #What is the effect of lower bHA? Do we replicate the results of the original study?
 R"""
 mean_impact <- lapply(1:5, function(ts) {
@@ -212,14 +228,7 @@ dev.off()
 
 R"dev.off()"
 
-#Bar plot of RH, RA, and RE values - deterministic results
-R = pmap(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(200), 1:5)
-@rput R
-R"""
-R = unlist(R)
-Rdf = data.frame(R = R, R_type = rep(c("RH", "RA", "RE"),times = 5), TS = rep(c("B", "Bd", "H", "E", "A"), each = 3))
-ggplot(Rdf, aes(TS, R, fill = R_type)) + geom_bar(stat = "identity", position = "dodge")
-"""
+
 #compare impacts of 0.1 -> 0.0over bEH variation across TS
 R"""
 dfs <- adply(1:5, 1, function(ts) {
