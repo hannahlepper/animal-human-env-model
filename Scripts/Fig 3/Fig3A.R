@@ -20,40 +20,37 @@ plot_heatmap <- function(df, title) {
     geom_tile() +
     theme_bw(base_size = 6) +
     theme(axis.text.x = element_text(angle = 90)) +
-    scale_fill_gradientn(expression(omega[A]), colors = myP(100), limits = c(0, .15)) +
+    scale_fill_gradientn(expression(omega[A]), colors = myP(100), limits = c(0, .127)) +
     ylab(expression(Lambda[A] ~ "(pre-intervention)")) +
     xlab(expression(beta[EH])) + 
     labs(title = title)
 }
 
-p1 <- plot_heatmap(get_mean(lower_bin, P[[1]][[1]][,c(11,2)], d_impact[[1]]), "b")
-
 #Data for heatmaps needed
-impacts_highbHA <- d_impact
-impacts_lowbHA <- d_impact
+#impacts_highbHA <- d_impact
+#impacts_lowbHA <- d_impact
 impacts_highbHA <- impact_2
 impacts_lowbHA <- impact_5
 
-TS <- c("Baseline", "Balanced", "Human\ndominated", "Environment\ndominated", "Animal\ndominated")
+TS <- c("Baseline", "Balanced", "Humandominated", "Environmentdominated", "Animaldominated")
 plot_list_highbHA <- lapply(1:5, function(ts) {
-  mean_impact = get_mean(lower_bin, P[[3]][[ts]][,c(11,2)], impacts_highbHA[ts])
+  mean_impact = get_mean(lower_bin, Pv[[3]][[ts]][,c(11,2)], impacts_highbHA[ts])
   plot_heatmap(mean_impact, paste(c(TS[ts], " high bHA"), collapse = ""))
 })
 
 plot_list_lowbHA <- lapply(1:5, function(ts) {
-  mean_impact = get_mean(lower_bin, P[[3]][[ts]][,c(11,2)], impacts_lowbHA[ts])
-  plot_heatmap(mean_impact, paste(c(TS[ts], " low bHA")))
+  mean_impact = get_mean(lower_bin, Pv[[9]][[ts]][,c(11,2)], impacts_lowbHA[ts])
+  plot_heatmap(mean_impact, paste(c(TS[ts], " low bHA"), collapse = ""))
 })
 
-TSfn <- c("Baseline", "Balanced", "Humandominated", "Environmentdominated", "Animaldominated")
 lapply(1:5, function(ts) {
 
-  fn <- paste(c("plots/heatmap_highbHA_", TSfn[ts]), collapse = "")
+  fn <- paste(c("plots/heatmap_highbHA_", TS[ts], ".png"), collapse = "")
   png(fn, width = 8, height = 7, units = "cm", res = 300)
   print(plot_list_highbHA[[ts]])
   dev.off()
 
-  fn <- paste(c("plots/heatmap_lowbHA_", TSfn[ts]), collapse = "")
+  fn <- paste(c("plots/heatmap_lowbHA_", TS[ts], ".png"), collapse = "")
   png(fn, width = 8, height = 7, units = "cm", res = 300)
   print(plot_list_lowbHA[[ts]])
   dev.off()

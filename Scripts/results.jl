@@ -1,8 +1,8 @@
-# using JLD2
+using JLD2
 #
-# @load "D:/results_workspace.jld2" dat
-# @load "D:/results_workspace_P.jld2" P
-
+@load "D:/results_workspace.jld2" dat
+@load "D:/results_workspace_P.jld2" P
+Pv = P
 
 #GET PRESENCE/ABSENCE OF TARGETS REACHED
 
@@ -45,7 +45,6 @@ impact_8 = [map_impacts(dat[i,7][:,2], dat[i, 10][:,2]) for i in 1:5]
 
 #9. impact of original model - high impact scenario
 impact_9 = map_impacts(dat_orig[1][:,2], dat_orig[2][:,2])
-mean(impact_9)
 
 #Did simulations reach target RH of 0.65 - 0.75?
 n_target = hcat([Int.(0.65 .< dat[x,1][:,1] .< 0.75) for x in 1:5])
@@ -55,14 +54,22 @@ n_low_impact = hcat([Int.(impact_1[x] .< 0.02) for x in 1:5])
 
 
 #Using RCall to get % reaching target
+#rmprocs(11)
 using RCall
-R"source('RGetPercAndPlot.R')"
-
-@rput Pv
+R"source('Scripts/libraries.R')"
 
 #Fig 1 B
 #Bar plot of RH, RA, and RE values - deterministic results
-R = pmap(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(200), 1:5)
+#include("Scripts/model.jl")
+#initial parameter values
+#       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
+p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
+p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
+p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
+p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
+p_H =  [0.1, 0.1, 0.001, 0.001, 0.2019663,  0.001,      0.2019663,  0.001,      0.001,      0.001,      0.001,      0.2019663,  0.1, 0.1, 0.2]
+p = [p_B, p_Bd, p_E, p_A, p_H]
+R = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(200), 1:5)
 @rput R
 R"source('Scripts/Fig 1/RHforeachTSplot.R')"
 
@@ -76,7 +83,7 @@ R"source('Scripts/Fig 2/fig2.R')"
 #Bins for parameters
 lower_bin = [0.:0.05:1;]
 bin_N = size(lower_bin)[1]
-@rput impact_2 impact_5
+@rput impact_2 impact_5 lower_bin bin_N
 R"source('Scripts/Fig 3/Fig3A.R')"
 
 
@@ -182,6 +189,10 @@ miLAplot = wrap_plots(mean_impact_plot_list)
 """
 R"""dev.off()"""
 
+
+
+###############################
+
 #Compare bEH and LA interventions
 R"""
 dfs <- adply(1:5, 1, function(ts) {
@@ -198,6 +209,12 @@ df_high <- dfs[dfs$pv_cut == "(0.495,0.505]",]
 wrap_plots(ggplot(df_low, aes(ts, impact, col = param)) + geom_boxplot(),
 ggplot(df_high, aes(ts, impact, col = param)) + geom_boxplot())
 """
+###############################
+
+
+
+
+
 
 #Get together RH measures for these indices
 R"""

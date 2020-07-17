@@ -5,6 +5,7 @@ using Distributions
 
 #initial parameter values
 #       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
+p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
 p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
 p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
 p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
@@ -84,7 +85,7 @@ pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
          0.1) #μA
 
 #set up parameter set that never changes first
-N = 100000 #have set this lower so I can look into results more quickly
+N = 2000000 
 p_initial = zeros(N, 15)
 
 #Parameters that have sampling distributions
