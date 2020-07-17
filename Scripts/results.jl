@@ -59,8 +59,6 @@ using RCall
 R"source('RGetPercAndPlot.R')"
 
 @rput Pv
-@rput n_target n_low_impact
-@rput impact_1 impact_2 impact_3 impact_4 impact_5 impact_6 impact_7 impact_8 impact_9
 
 #Fig 1 B
 #Bar plot of RH, RA, and RE values - deterministic results
@@ -78,8 +76,8 @@ R"source('Scripts/Fig 2/fig2.R')"
 #Bins for parameters
 lower_bin = [0.:0.05:1;]
 bin_N = size(lower_bin)[1]
-
-
+@rput impact_2 impact_5
+R"source('Scripts/Fig 3/Fig3A.R')"
 
 
 
