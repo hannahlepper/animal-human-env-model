@@ -4,7 +4,7 @@
 #elements impact, 0 - 1.0
 
 N <- 10000 #Number of trials in experiments
-d_impact <- lapply(1:5, function(ts) matrix(data = rbinom(N/5, 50, 0.1)/50))
+d_impact <- lapply(1:5, function(ts) rbinom(N, 50, 0.1)/50)
 
 
 #Parameter data
@@ -20,7 +20,7 @@ exp1 <- setNames(lapply(1:5, function(ts) {
 exp2 <- setNames(lapply(1:5, function(ts) {
     data.frame(matrix(rbeta(N*16, 1, 1), ncol = 16))
 }), ts)
-P <- list(exp1, exp2, exp1, exp2, exp1, exp2)
+Pv <- list(exp1, exp2, exp1, exp2, exp1, exp2)
 
 #bins
 lower_bin = seq(0., 1., 0.05)
