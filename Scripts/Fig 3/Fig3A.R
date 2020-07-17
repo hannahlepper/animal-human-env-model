@@ -45,14 +45,15 @@ plot_list_lowbHA <- lapply(1:5, function(ts) {
   plot_heatmap(mean_impact, paste(c(TS[ts], " low bHA")))
 })
 
+TSfn <- c("Baseline", "Balanced", "Humandominated", "Environmentdominated", "Animaldominated")
 lapply(1:5, function(ts) {
 
-  fn <- paste(c("plots/heatmap_highbHA_", TS[ts]), collapse = "")
+  fn <- paste(c("plots/heatmap_highbHA_", TSfn[ts]), collapse = "")
   png(fn, width = 8, height = 7, units = "cm", res = 300)
   print(plot_list_highbHA[[ts]])
   dev.off()
 
-  fn <- paste(c("plots/heatmap_lowbHA_", TS[ts]), collapse = "")
+  fn <- paste(c("plots/heatmap_lowbHA_", TSfn[ts]), collapse = "")
   png(fn, width = 8, height = 7, units = "cm", res = 300)
   print(plot_list_lowbHA[[ts]])
   dev.off()
