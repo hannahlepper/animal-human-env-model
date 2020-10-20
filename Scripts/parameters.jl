@@ -88,6 +88,8 @@ pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
 N = 2000000 
 p_initial = zeros(N, 15)
 
+using Random
+Random.seed!(123)
 #Parameters that have sampling distributions
 #p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
 #p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
