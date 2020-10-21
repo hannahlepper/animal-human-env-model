@@ -177,7 +177,7 @@ p_7 = map(x -> col_edit(p_7[x],2,0.1), 1:5)
 
 #8.varying bEH, low bHA, LA fixed to 0.
 p_8 = deepcopy(p_2)
-p_8 = map(x -> col_edit(p_8[x],7, 0.001), 1:5)
+p_8 = map(x -> col_edit(p_8[x],7, p_8[x][:,7]/100), 1:5)
 
 #9. varying bEH, low bHA, varying LA.
 p_9 = deepcopy(p_8)

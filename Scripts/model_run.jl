@@ -7,7 +7,8 @@ addprocs(11)
 nprocs() #check it's working
 
 #Get the model (everyone needs to know)
-@time @everywhere include("Scripts/model.jl")
+@time @everywhere include("Scripts/model.jl") 
+#sometimes doesn't work - can try closing the workers (rmprocs(11)) and reopening them.
 
 #Generate data
 @time dat = pmap(x -> model_run(x, unboundeds), P)

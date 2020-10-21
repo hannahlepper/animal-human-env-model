@@ -76,6 +76,7 @@ R"source('Scripts/Fig 1/RHforeachTSplot.R')"
 
 #Fig 2 A and B 
 #Compare bEH and LA interventions
+Pv = P
 @rput Pv impact_3 impact_4
 R"source('Scripts/Fig 2/fig2.R')"
 
