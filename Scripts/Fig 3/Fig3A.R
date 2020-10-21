@@ -6,11 +6,12 @@ myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#
 
 plot_heatmap2 <- function(df, title) {
   ggplot(df, aes(x, y, z = impact)) +
-    stat_summary_2d() +
-    scale_x_continuous(limits = c(0,1)) +
-    scale_y_continuous(limits = c(0,1)) +
+    stat_summary_2d(binwidth = 0.1) +
     scale_fill_gradientn(colors = myP(100), limits = c(0, .127)) +
-    labs(title = title) 
+    labs(x = expression(paste("Transmission from environment to humans (", beta[EH], ")")), 
+         y = expression(paste("Pre-intervention antibiotic consumption in animals (", Lambda[A], ")")),
+         title = title) +
+    theme_bw()
 }
 
 #Data for heatmaps needed
@@ -20,31 +21,35 @@ impacts_highbHA <- impact_2
 impacts_lowbHA <- impact_5
 
 TS <- c("Baseline", "Balanced", "Humandominated", "Environmentdominated", "Animaldominated")
-plot_list_highbHA <- lapply(1:5, function(ts) {
-  #mean_impact = get_mean(lower_bin, Pv[[15+ts]][,c(11,2)], impacts_highbHA[ts])
-  df <- data.frame(Pv[[10+ts]][,c(11,2)], impact = impacts_highbHA[ts]) %>%
-    setNames(., c("x", "y", "impact"))
-  #plot_heatmap(mean_impact, paste(c(TS[ts], " high bHA"), collapse = ""))
+df_list_highbHA <- lapply(1:5, function(ts) {
+ paramdf <- data.frame(x = as.numeric(Pv[[40+ts]][,11]), y = as.numeric(Pv[[40+ts]][,2])) 
+  df <- data.frame(paramdf, impacts_highbHA[ts]) %>%
+    setNames(., c("x", "y", "impact"))  
+})
+df_list_lowbHA <- lapply(1:5, function(ts) {
+  paramdf <- data.frame(x = as.numeric(Pv[[40+ts]][,11]), y = as.numeric(Pv[[40+ts]][,2])) 
+  df <- data.frame(paramdf, impacts_lowbHA[ts]) %>%
+    setNames(., c("x", "y", "impact")) 
+})
+
+plot_list_highbHA <- lapply(df_list_highbHA, function(df) {
   plot_heatmap2(df, paste(c(TS[ts], " high bHA"), collapse = ""))
 })
 
-plot_list_lowbHA <- lapply(1:5, function(ts) {
-  #mean_impact = get_mean(lower_bin, Pv[[45+ts]][,c(11,2)], impacts_lowbHA[ts])
-  df <- data.frame(Pv[[40+ts]][,c(11,2)], impact = impacts_lowbHA[ts]) %>%
-    setNames(., c("x", "y", "impact"))
-  #plot_heatmap(mean_impact, paste(c(TS[ts], " low bHA"), collapse = ""))
+plot_list_lowbHA <- lapply(df_list_lowbHA, function(df) {
   plot_heatmap2(df, paste(c(TS[ts], " low bHA"), collapse = ""))
 })
+
 
 lapply(1:5, function(ts) {
 
   fn <- paste(c("plots/heatmap_highbHA_", TS[ts], ".png"), collapse = "")
-  png(fn, width = 8, height = 7, units = "cm", res = 300)
+  png(fn, width = 17, height = 13, units = "cm", res = 300)
   print(plot_list_highbHA[[ts]])
   dev.off()
 
   fn <- paste(c("plots/heatmap_lowbHA_", TS[ts], ".png"), collapse = "")
-  png(fn, width = 8, height = 7, units = "cm", res = 300)
+  png(fn, width = 17, height = 13, units = "cm", res = 300)
   print(plot_list_lowbHA[[ts]])
   dev.off()
 
