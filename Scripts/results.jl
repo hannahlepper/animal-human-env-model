@@ -48,7 +48,7 @@ impact_8 = [map_impacts(dat[i,7][:,2], dat[i, 10][:,2]) for i in 1:5]
 impact_9 = map_impacts(dat_orig[1][:,2], dat_orig[2][:,2])
 
 #10. varying both pre-intervention bEH and LA
-impact_10 = map_impacts(dat[i,3][:,2], dat[i,10][:,2] for i in 1:5)
+impact_10 = [map_impacts(dat[i,3][:,2], dat[i,10][:,2]) for i in 1:5]
 
 #Did simulations reach target RH of 0.65 - 0.75?
 n_target = hcat([Int.(0.65 .< dat[x,1][:,1] .< 0.75) for x in 1:5])
@@ -76,7 +76,7 @@ R = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(200), 1:5)
 @rput R
 R"source('Scripts/Fig 1/RHforeachTSplot.R')"
 
-#Fig 2 A and B 
+#Fig 2 A and B
 #Compare bEH and LA interventions
 Pv = P
 @rput Pv impact_3 impact_4
