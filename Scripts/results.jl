@@ -23,7 +23,7 @@ end
 #1.fixed LA intervention, varying bEH
 impact_1 = [map_impacts(dat[i,1][:,2], dat[i,2][:,2]) for i in 1:5]
 
-#2. varyng LA intervention, varying bEH
+#2. varyng LA intervention, varying bEH (high/original bHA)
 impact_2 = [map_impacts(dat[i,3][:,2], dat[i,2][:,2]) for i in 1:5]
 
 #3. varying bEH intervention, fixed LA
@@ -47,6 +47,9 @@ impact_8 = [map_impacts(dat[i,7][:,2], dat[i, 10][:,2]) for i in 1:5]
 #9. impact of original model - high impact scenario
 impact_9 = map_impacts(dat_orig[1][:,2], dat_orig[2][:,2])
 
+#10. varying both pre-intervention bEH and LA
+impact_10 = map_impacts(dat[i,3][:,2], dat[i,10][:,2] for i in 1:5)
+
 #Did simulations reach target RH of 0.65 - 0.75?
 n_target = hcat([Int.(0.65 .< dat[x,1][:,1] .< 0.75) for x in 1:5])
 
@@ -55,7 +58,6 @@ n_low_impact = hcat([Int.(impact_1[x] .< 0.02) for x in 1:5])
 
 
 #Using RCall to get % reaching target
-#rmprocs(11)
 using RCall
 R"source('Scripts/libraries.R')"
 
@@ -92,3 +94,7 @@ R"source('Scripts/Fig 3/Fig3A.R')"
 #dotplot and lineplot of omegaA as betaEH increases
 @rput impact_1 impact_9
 R"source('Scripts/Fig 3/Fig3C.R')"
+
+#Fig 4
+@rput impact_10
+R"source('Scripts/Fig 4/Fig4.R')"

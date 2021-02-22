@@ -1,13 +1,12 @@
 
 
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
-myP <- colorRampPalette(c("#070066","#1100FA","#428af5","#BAD3F7", "#F6FCBD", "#FFC803"),
-                        bias = 1.)
+myP <- colorRampPalette(c("#070066","#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"))
 
 plot_heatmap2 <- function(df, title) {
   ggplot(df, aes(x, y, z = impact)) +
     stat_summary_2d(binwidth = 0.1) +
-    scale_fill_gradientn(colors = myP(100), limits = c(0, .127)) +
+    scale_fill_gradientn(colors = myP(100), limits = c(0, .1)) +
     labs(x = expression(paste("Transmission from environment to humans (", beta[EH], ")")), 
          y = expression(paste("Pre-intervention antibiotic consumption in animals (", Lambda[A], ")")),
          title = title) +
@@ -22,7 +21,7 @@ impacts_lowbHA <- impact_5
 
 TS <- c("Baseline", "Balanced", "Humandominated", "Environmentdominated", "Animaldominated")
 df_list_highbHA <- lapply(1:5, function(ts) {
- paramdf <- data.frame(x = as.numeric(Pv[[40+ts]][,11]), y = as.numeric(Pv[[40+ts]][,2])) 
+ paramdf <- data.frame(x = as.numeric(Pv[[10+ts]][,11]), y = as.numeric(Pv[[10+ts]][,2])) 
   df <- data.frame(paramdf, impacts_highbHA[ts]) %>%
     setNames(., c("x", "y", "impact"))  
 })
@@ -32,11 +31,13 @@ df_list_lowbHA <- lapply(1:5, function(ts) {
     setNames(., c("x", "y", "impact")) 
 })
 
-plot_list_highbHA <- lapply(df_list_highbHA, function(df) {
+plot_list_highbHA <- lapply(1:5, function(ts) {
+  df <- df_list_highbHA[[ts]]
   plot_heatmap2(df, paste(c(TS[ts], " high bHA"), collapse = ""))
 })
 
-plot_list_lowbHA <- lapply(df_list_lowbHA, function(df) {
+plot_list_lowbHA <- lapply(1:5, function(ts) {
+  df <- df_list_lowbHA[[ts]]
   plot_heatmap2(df, paste(c(TS[ts], " low bHA"), collapse = ""))
 })
 
