@@ -28,12 +28,12 @@ png("plots/Fig3c_dotplot.png", width = 15, height = 8, units = "cm", res = 300)
 p <- ggplot(dfs_summary, aes(bEH, med_impact, col = ts)) + 
     geom_pointrange(data = dfs_orig, mapping = aes(ymin = lower, ymax = upper), colour = "black", size = .2) +
     geom_line() +
-    geom_ribbon(aes(ymin = lower, ymax = upper, fill=ts), alpha=0.1, colour = NA) +
+    geom_ribbon(aes(ymin = lower, ymax = upper, fill=ts), alpha=0.1, colour = NA, show.legend = F) +
     theme_bw(base_size = 7) +
     #labs(y = parse(text = expression(omega[A])), 
     #     x = parse(text = expression(beta[EH])), 
-     labs(y = "Impact of reducing antibiotic consumption in animals",
-          x = "Transmission from environment to humans",        
+     labs(y = expression(paste(omega[A])),
+          x = expression(paste(beta[EH])),        
           col = "Transmission\nscenario") +
     theme(legend.background = element_blank())
 print(p)
