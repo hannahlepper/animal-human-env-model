@@ -1,7 +1,7 @@
 #For testing - dummy data
-Pv <- lapply(1:100, function(x) data.frame(matrix(runif(55, 0, 1), ncol = 11)))
-impact_2 <- lapply(1:5, function(x) runif(5, 0, 0.15))
-impact_5 <- lapply(1:5, function(x) runif(5, 0, 0.15))
+#Pv <- lapply(1:100, function(x) data.frame(matrix(runif(55, 0, 1), ncol = 11)))
+#impact_2 <- lapply(1:5, function(x) runif(5, 0, 0.15))
+#impact_5 <- lapply(1:5, function(x) runif(5, 0, 0.15))
 
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 myP <- colorRampPalette(c("#070066","#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"))
@@ -23,10 +23,13 @@ plot_heatmap2 <- function(df, title) {
 impacts_highbHA <- impact_2
 impacts_lowbHA <- impact_5
 
+str(impacts_highbHA)
+str(Pv[[1]])
+
 TS <- c("Baseline", "Balanced", "Human-dominated", "Environment-dominated", "Animal-dominated")
 df_list_highbHA <- lapply(1:5, function(ts) {
  paramdf <- data.frame(x = as.numeric(Pv[[10+ts]][,11]), y = as.numeric(Pv[[10+ts]][,2])) 
-  df <- data.frame(paramdf, impacts_highbHA[ts]) %>%
+  df <- data.frame(paramdf, impacts_highbHA[[ts]]) %>%
     setNames(., c("x", "y", "impact"))  
 })
 df_list_lowbHA <- lapply(1:5, function(ts) {
@@ -71,21 +74,26 @@ do.call(grid.arrange, plot_list_lowbHA)
 dev.off()
 
 png("plots/Fig3.png", width = 19, height = 8, units = "cm", res = 300)
-cowplot::plot_grid(plot_list_highbHA[[2]], plot_list_lowbHA[[2]], legend_to_plot, 
-  ncol = 3, rel_widths = c(0.4, 0.4, 0.2))
+grid.arrange(plot_list_lowbHA[[2]], plot_list_highbHA[[2]], ncol = 2)
+#cowplot::plot_grid(plot_list_highbHA[[2]], plot_list_lowbHA[[2]], legend_to_plot, 
+#  ncol = 3, rel_widths = c(0.4, 0.4, 0.2))
 dev.off()
 
-lapply(1:5, function(ts) {
+png("plots/Fig3Legend.png", width = 5, height = 5, units = "cm", res = 300)
+legend_to_plot
+dev.off()
 
-  fn <- paste(c("plots/heatmap_highbHA_", TS[ts], ".png"), collapse = "")
-  png(fn, width = 17, height = 13, units = "cm", res = 300)
-  print(plot_list_highbHA[[ts]])
-  dev.off()
+# lapply(1:5, function(ts) {
 
-  fn <- paste(c("plots/heatmap_lowbHA_", TS[ts], ".png"), collapse = "")
-  png(fn, width = 17, height = 13, units = "cm", res = 300)
-  print(plot_list_lowbHA[[ts]])
-  dev.off()
+#   fn <- paste(c("plots/heatmap_highbHA_", TS[ts], ".png"), collapse = "")
+#   png(fn, width = 17, height = 13, units = "cm", res = 300)
+#   print(plot_list_highbHA[[ts]])
+#   dev.off()
 
-})
+#   fn <- paste(c("plots/heatmap_lowbHA_", TS[ts], ".png"), collapse = "")
+#   png(fn, width = 17, height = 13, units = "cm", res = 300)
+#   print(plot_list_lowbHA[[ts]])
+#   dev.off()
+
+# })
 
