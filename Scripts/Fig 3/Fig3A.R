@@ -1,7 +1,7 @@
 #For testing - dummy data
-#Pv <- lapply(1:100, function(x) data.frame(matrix(runif(55, 0, 1), ncol = 11)))
-#impact_2 <- lapply(1:5, function(x) runif(5, 0, 0.15))
-#impact_5 <- lapply(1:5, function(x) runif(5, 0, 0.15))
+Pv <- lapply(1:100, function(x) data.frame(matrix(runif(55, 0, 1), ncol = 11)))
+impact_2 <- lapply(1:5, function(x) runif(5, 0, 0.15))
+impact_5 <- lapply(1:5, function(x) runif(5, 0, 0.15))
 
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 myP <- colorRampPalette(c("#070066","#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"))
@@ -23,8 +23,8 @@ plot_heatmap2 <- function(df, title) {
 impacts_highbHA <- impact_2
 impacts_lowbHA <- impact_5
 
-str(impacts_highbHA)
-str(Pv[[1]])
+#str(impacts_highbHA)
+#str(Pv[[1]])
 
 TS <- c("Baseline", "Balanced", "Human-dominated", "Environment-dominated", "Animal-dominated")
 df_list_highbHA <- lapply(1:5, function(ts) {
@@ -80,7 +80,7 @@ grid.arrange(plot_list_lowbHA[[2]], plot_list_highbHA[[2]], ncol = 2)
 dev.off()
 
 png("plots/Fig3Legend.png", width = 5, height = 5, units = "cm", res = 300)
-legend_to_plot
+plot(legend_to_plot)
 dev.off()
 
 # lapply(1:5, function(ts) {
