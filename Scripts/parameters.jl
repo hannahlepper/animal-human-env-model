@@ -51,13 +51,36 @@ struct vp
 end
 
 #beta distribution with mean = parameter selected in transmission scenarios, and var = mean/20
-#parameters estimated from R code
-pv = vp(ts(bp(0.188, 18.612), bp(1.301625,16.21196), bp(0.01898, 18.96102),
-          bp(2.295387, 13.86361), bp(0.01898, 18.96102)), #βEH
+# order reminder - p_B, p_Bd, p_H, p_E, p_A
+bEH_mu = [0.01, 0.07432092, 0.001, 0.1420501, 0.001]
+bEH_var = bEH_mu./20
+
+bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+
+pv = vp(ts(bp(bEH_alpha[1],bEH_beta[1]), 
+           bp(bEH_alpha[2],bEH_beta[2]), 
+           bp(bEH_alpha[3], bEH_beta[3]),
+           bp(bEH_alpha[4], bEH_beta[4]), 
+           bp(bEH_alpha[5], bEH_beta[5])), #βEH
         bp(1.7, 15.3), #ΛH
         bp(3, 12), #μE
         bp(1.7, 15.3)) #μH
 
+bEH_mu = [0.01, 0.08109928, 0.001, 0.23084954, 0.001]
+bEH_var = bEH_mu./20
+
+bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+
+pv2 = vp(ts(bp(bEH_alpha[1],bEH_beta[1]), 
+           bp(bEH_alpha[2],bEH_beta[2]), 
+           bp(bEH_alpha[3], bEH_beta[3]),
+           bp(bEH_alpha[4], bEH_beta[4]), 
+           bp(bEH_alpha[5], bEH_beta[5])), #βEH
+        bp(1.7, 15.3), #ΛH
+        bp(3, 12), #μE
+        bp(1.7, 15.3)) #μH
 
 #non varying parameters
 struct f_p
@@ -84,27 +107,43 @@ pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
          ts(0.1,   0.07432092, 0.2019663, 0.1420501,     0.001), #βHE
          0.1) #μA
 
+pf2 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
+         ts(0.1,   0.08109928, 0.20239149,     0.001,       0.001), #βHH
+         ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAA
+         ts(0.001, 0.08109928, 0.20239149,     0.001,       0.001), #βHA
+         ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAH
+         ts(0.1,   0.08109928,      0.001, 0.23084954, 0.20239149), #βAE
+         ts(0.01,  0.08109928,      0.001, 0.23084954,      0.001), #βEA
+         ts(0.1,   0.08109928, 0.20239149, 0.23084954,      0.001), #βHE
+         0.1) #μA
+
+
 #set up parameter set that never changes first
 N = 2000000 
 p_initial = zeros(N, 15)
+p_initial2 = zeros(N, 15)
 
 using Random
 Random.seed!(123)
 #Parameters that have sampling distributions
-#p_initial[:,1] .= rand(LogNormal(log(pv.ΛH.μ)+pv.ΛH.σ, pv.ΛH.σ), N)
-#p_initial[:,15] .= rand(LogNormal(log(pv.μE.μ)+pv.μE.σ, pv.μE.σ), N)
-#p_initial[:,13] .= rand(LogNormal(log(pv.μH.μ)+pv.μH.σ, pv.μH.σ), N)
+
 p_initial[:,1] .= rand(Beta(pv.ΛH.α, pv.ΛH.β), N)
 p_initial[:,15] .= rand(Beta(pv.μE.α, pv.μE.β), N)
 p_initial[:,13] .= rand(Beta(pv.μH.α, pv.μH.β), N)
 
+p_initial2[:,1] .= rand(Beta(pv2.ΛH.α, pv2.ΛH.β), N)
+p_initial2[:,15] .= rand(Beta(pv2.μE.α, pv2.μE.β), N)
+p_initial2[:,13] .= rand(Beta(pv2.μH.α, pv2.μH.β), N)
+
 #Parameters that are fixed
 #ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βHE, μA
 p_initial[:,[2,3,4,14]] .= [pf.ΛA, pf.γH, pf.γA, pf.μA]'
+p_initial2[:,[2,3,4,14]] .= [pf2.ΛA, pf2.γH, pf2.γA, pf2.μA]'
 
-p_initial
+
 #Make parameter sets for the different transmission scenarios
 p_1 = collect((map(x -> deepcopy(p_initial), 1:5)))
+p_1_bo = collect((map(x -> deepcopy(p_initial2), 1:5)))
 
 function col_edit(mat, col_index, replacement)
     mat[:,col_index] .= replacement
@@ -113,11 +152,14 @@ end
 
 #Parameters that have sampling distributions
 p_1 = map(x -> col_edit(p_1[x], 11, rand(Uniform(0.000001, 1.), N)), 1:5)
+p_1_bo = map(x -> col_edit(p_1_bo[x], 11, rand(Uniform(0.000001, 1.), N)), 1:5)
 
 #Parameters that are fixed
 #βHH, βAA, βHA, βAH, βAE, βEA, βHE
 #Order of transmission scenarios: B, Bd, H, E, A
 p_1 = map(x -> col_edit(p_1[x], [5,6,7,8,9,10,12], [getfield(getfield(pf,p),x) for p in [4,5,6,7,8,9,10]]'), 1:5)
+p_1_bo = map(x -> col_edit(p_1_bo[x], [5,6,7,8,9,10,12], [getfield(getfield(pf2,p),x) for p in [4,5,6,7,8,9,10]]'), 1:5)
+
 
 #get rid of negative numbers, or values over 1.5
 function keep_ps(p)
@@ -128,6 +170,7 @@ function keep_ps(p)
     return p[keep,:]
 end
 p_1= map(x -> keep_ps(p_1[x]), 1:5)
+p_1_bo = map(x -> keep_ps(p_1_bo[x]), 1:5)
 
 #Index for runs
 # Figure 2 data needed
@@ -154,48 +197,102 @@ p_1= map(x -> keep_ps(p_1[x]), 1:5)
 p_2 = deepcopy(p_1)
 p_2 = map(x -> col_edit(p_2[x], 2, 0), 1:5)
 
+p_2_bo = deepcopy(p_1_bo)
+p_2_bo = map(x -> col_edit(p_2_bo[x], 2, 0), 1:5)
+
 #3. varying LA, varying bEH
 p_3 = deepcopy(p_2)
 p_3 = map(x -> col_edit(p_3[x],2,rand(Uniform(0.000001, 1.), N)[1:size(p_3[1])[1]]), 1:5)
+
+p_3_bo = deepcopy(p_2_bo)
+p_3_bo = map(x -> col_edit(p_3_bo[x],2,rand(Uniform(0.000001, 1.), N)[1:size(p_3_bo[1])[1]]), 1:5)
+
 
 #4. fixed bEH, varying LA
 p_4 = deepcopy(p_3)
 bEHts = [0.1420501, 0.01, 0.01, 0.001, 0.001]
 p_4 = map(x -> col_edit(p_4[x], 11, bEHts[x]), 1:5)
 
+p_4_bo = deepcopy(p_3_bo)
+bEHts = [0.23084954, 0.01, 0.01, 0.001, 0.001]
+p_4_bo = map(x -> col_edit(p_4_bo[x], 11, bEHts[x]), 1:5)
+
+
 #5. fixed bEH = 0, fixed LA = 0.1
 p_5 = deepcopy(p_1)
 p_5 = map(x -> col_edit(p_5[x],11, 0), 1:5)
+
+p_5_bo = deepcopy(p_1_bo)
+p_5_bo = map(x -> col_edit(p_5_bo[x],11, 0), 1:5)
 
 #6. fixed bEH, fixed LA = 0
 p_6 = deepcopy(p_4)
 p_6 = map(x -> col_edit(p_6[x],2,0), 1:5)
 
+p_6_bo = deepcopy(p_4_bo)
+p_6_bo = map(x -> col_edit(p_6_bo[x],2,0), 1:5)
+
 #7. fixed bEH = ts, fixed LA = 0.1
 p_7 = deepcopy(p_6)
 p_7 = map(x -> col_edit(p_7[x],2,0.1), 1:5)
+
+p_7_bo = deepcopy(p_6_bo)
+p_7_bo = map(x -> col_edit(p_7_bo[x],2,0.1), 1:5)
 
 #8.varying bEH, low bHA, LA fixed to 0.
 p_8 = deepcopy(p_2)
 p_8 = map(x -> col_edit(p_8[x],7, p_8[x][:,7]/100), 1:5)
 
+p_8_bo = deepcopy(p_2_bo)
+p_8_bo = map(x -> col_edit(p_8_bo[x],7, p_8_bo[x][:,7]/100), 1:5)
+
 #9. varying bEH, low bHA, varying LA.
 p_9 = deepcopy(p_8)
 p_9 = map(x -> col_edit(p_9[x],2,rand(Uniform(0.000001, 1.), N)[1:size(p_9[1])[1]]), 1:5)
+
+p_9_bo = deepcopy(p_8_bo)
+p_9_bo = map(x -> col_edit(p_9_bo[x],2,rand(Uniform(0.000001, 1.), N)[1:size(p_9_bo[1])[1]]), 1:5)
 
 #10. bEH and LA set to 0
 p_10 = deepcopy(p_6)
 p_10 = map(x -> col_edit(p_10[x], 11, 0), 1:5)
 
+p_10_bo = deepcopy(p_6_bo)
+p_10_bo = map(x -> col_edit(p_10_bo[x], 11, 0), 1:5)
+
+#Put all parameter sets into one group
 P = hcat(p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10)
 Pv = vec(map(x -> vec(x), [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]))
 
-#10. Original model
+P_bo = hcat(p_1_bo, p_2_bo, p_3_bo, p_4_bo, p_5_bo, p_6_bo, p_7_bo, p_8_bo, p_9_bo, p_10_bo)
+Pv_bo = vec(map(x -> vec(x), [p_1_bo, p_2_bo, p_3_bo, p_4_bo, p_5_bo, p_6_bo, p_7_bo, p_8, p_9_bo, p_10_bo]))
+
+
+#11. Original model
 p_orig = deepcopy(p_1[1])
 p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
 
-#11. Original model - post intervention
+p_orig_bo = deepcopy(p_1_bo[1])
+p_orig_bo = col_edit(p_orig_bo, [3,4,9,10,11,12,15], 0)
+
+#12. Original model - post intervention
 p_orig_int = deepcopy(p_orig)
 p_orig_int = col_edit(p_orig_int, 2, 0)
 
+p_orig_int_bo = deepcopy(p_orig_bo)
+p_orig_int_bo = col_edit(p_orig_int_bo, 2, 0)
+
 p_origs_v = vec(map(x -> vec(x), [p_orig, p_orig_int]))
+p_origs_v_bo = vec(map(x -> vec(x), [p_orig_bo, p_orig_int_bo]))
+
+using JLD2
+@save "/mnt/d/results_workspace_P.jld2" P
+@save "/mnt/d/results_workspace_Pv.jld2" Pv
+
+@save "/mnt/d/results_workspace_P_bo.jld2" P_bo
+@save "/mnt/d/results_workspace_Pv_bo.jld2" Pv_bo
+
+@save "/mnt/d/results_workspace_p_orig.jld2" p_orig
+@save "/mnt/d/results_workspace_p_orig_bo.jld2" p_orig_bo
+@save "/mnt/d/results_workspace_p_orig_int.jld2" p_orig_int
+@save "/mnt/d/results_workspace_p_orig_int_bo.jld2" p_orig_int_bo
