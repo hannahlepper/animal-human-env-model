@@ -1,13 +1,17 @@
 #Get parameters
-include("Scripts/parameters.jl")
+include("parameters.jl")
 
 #Get other processes going
 using Distributed
-addprocs(11)
+addprocs(3)
 nprocs() #check it's working
 
+@everywhere (using Pkg; Pkg.activate("."))
+
 #Get the model (everyone needs to know)
-@time @everywhere include("Scripts/model.jl") 
+@time using DifferentialEquations
+@everywhere using DifferentialEquations
+@time @everywhere include("model.jl") 
 #sometimes doesn't work - can try closing the workers (rmprocs(2:12)) and reopening them.
 #alternatively run on worker 1 first and then the rest
 
