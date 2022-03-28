@@ -15,13 +15,20 @@ using DifferentialEquations
 
 #Generate data
 using JLD2
+
 @load "/mnt/d/results_workspace_P.jld2" P
 @time dat = pmap(x -> model_run(x, unboundeds), P)
+@save "D:/results_workspace.jld2" dat
+p = Nothing
+
 @time dat_orig = pmap(x -> model_run(x, unboundeds), [p_orig, p_orig_int])
 
 @load "/mnt/d/results_workspace_P_bo.jld2" P_bo
 @time dat_bo = pmap(x -> model_run(x, boundeds), P_bo)
+@save "D:/results_workspace_dat_bo.jld2" dat_bo
 P_bo = Nothing 
+
+
 @time dat_orig_bo = pmap(x -> model_run(x, boundeds), [p_orig_bo, p_orig_int_bo])
 #rows for transmission scenarios, columns for experiments
 
