@@ -17,7 +17,7 @@ Rdf <- bind_rows(Rdf, Rdf2) %>%
     subset(., (R_type == "RE")) %>%
     mutate(., TS = factor(TS, 
                         levels = c("Baseline", "Balanced", "Human\ndominated", 
-                                    "Animal\ndominated", "Environment\ndominated"),
+                                    "Environment\ndominated", "Animal\ndominated"),
                         ordered = TRUE),
              R_type = factor(R_type, levels = c("RH", "RA", "RE"),
                         labels = c("RH", "Proportion of animals carrying\n resistant bacteria",
@@ -27,9 +27,12 @@ png("plots/barplotFig1B.png", width = 8, height = 7, units = "cm", res = 300)
 p <- ggplot(Rdf, aes(TS, R, fill = model)) +
     geom_bar(stat = "identity", position = "dodge") +
     #scale_fill_discrete("", labels = parse(text = levels(Rdf$R_type))) +
-    labs(x = "", y = "", fill = "Model") +
+    labs(x = "", y = "Proportion of environmental units\n carrying resistant bacteria", fill = "Model") +
+    scale_colour_viridis() +
     theme_bw(base_size = 8) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 0.95)) +
-    facet_wrap(~R_type, ncol = 1)
+    theme(axis.text.x = element_text(angle = 45, hjust = 0.95),
+            legend.position = c(0.15, 0.85),
+            legend.background = element_blank()) +
+    #facet_wrap(~R_type, ncol = 1)
 print(p)
 dev.off()

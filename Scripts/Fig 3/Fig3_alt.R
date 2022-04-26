@@ -33,6 +33,9 @@ p <- ggplot(df, aes(TS, mean_impact, col = mod)) +
     geom_pointrange(aes(ymin = lower, ymax = upper), , shape = 1,
         position = position_dodge(width = 0.2)) +
     labs(y = expression(paste(omega)), x = "", col = "Environment\ntype") +
-    theme_bw()
+    scale_colour_viridis() +
+    theme_bw() +
+    theme(legend.position = c(0.15, 0.85),
+            legend.background = element_blank()) 
 print(p)
 dev.off()

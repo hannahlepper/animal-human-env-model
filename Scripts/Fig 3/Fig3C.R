@@ -33,7 +33,7 @@ df_orig_unbounded = data.frame(bEH = 0, TS = "No environment",
 #df_unbounded = data.frame(impact = rnorm(10000), TS = sample(letters[1:4], 10000, replace = TRUE), bEH = rbeta(10000, 1,1))
 
 
-png("plots/Fig3c_smooth.png", width = 15, height = 8, units = "cm", res = 300)
+png("plots/Fig3c_smooth.png", width = 10, height = 8, units = "cm", res = 300)
 #p <- plot(df_unbounded$bEH, df_unbounded$impact)
 p <- ggplot(df_unbounded, aes(bEH, mean_impact)) + 
     #geom_pointrange(data = df_orig_unbounded, 
@@ -41,6 +41,7 @@ p <- ggplot(df_unbounded, aes(bEH, mean_impact)) +
     #    colour = "black", size = .2) +
     geom_line(aes(col = TS)) +
     #stat_smooth(method = "loess") +
+    viridis::scale_colour_viridis() +
     geom_ribbon(aes(ymin = lower, ymax = upper, fill = TS), 
       show.legend = FALSE, alpha = 0.2) +
     theme_bw(base_size = 7) +

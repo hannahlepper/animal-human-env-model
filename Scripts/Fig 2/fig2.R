@@ -46,9 +46,9 @@ p <- ggplot(dfs, aes(ts, impact, col = param)) +
       labs(x = "", y = expression(omega)) +
       scale_colour_discrete("Parameter targeted\nfor intervention", labels = label_parse) +
       theme_bw()+
-      #theme(legend.position = c(0.15, 0.85),
-      #      legend.background = element_blank()) +
-      facet_wrap(~model, ncol = 1)
+      theme(legend.position = c(0.15, 0.85),
+            legend.background = element_blank()) +
+      facet_wrap(~model, ncol = 2)
 print(p)
 dev.off()
 
