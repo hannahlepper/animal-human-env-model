@@ -233,24 +233,16 @@ function get_params(transmission_scenario, experiment_num, n_sets,
 end
 
 #11. Original model
-# p_orig = deepcopy(p_1[1])
-# p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
 
-# p_orig_bo = deepcopy(p_1_bo[1])
-# p_orig_bo = col_edit(p_orig_bo, [3,4,9,10,11,12,15], 0)
+# 1  2  3  4  5   6   7   8   9   10  11  12  13  14  15
+# LH LA gH gA bHH bAA bHA bAH bAE bEA bEH bHE muH muA muE
+     
+p_orig = get_params(1, 1, 2000000, pf, p_uncertainty, bEH_experiments_unbounded, LA_experiments)
+p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
 
-# #12. Original model - post intervention
-# p_orig_int = deepcopy(p_orig)
-# p_orig_int = col_edit(p_orig_int, 2, 0)
-
-# p_orig_int_bo = deepcopy(p_orig_bo)
-# p_orig_int_bo = col_edit(p_orig_int_bo, 2, 0)
-
-# p_origs_v = vec(map(x -> vec(x), [p_orig, p_orig_int]))
-# p_origs_v_bo = vec(map(x -> vec(x), [p_orig_bo, p_orig_int_bo]))
+p_orig_int = deepcopy(p_orig)
+p_orig_int = col_edit(p_orig_int, 2, 0)
 
 # using JLD2
 # @save "/mnt/d/results_workspace_p_orig.jld2" p_orig
-# @save "/mnt/d/results_workspace_p_orig_bo.jld2" p_orig_bo
 # @save "/mnt/d/results_workspace_p_orig_int.jld2" p_orig_int
-# @save "/mnt/d/results_workspace_p_orig_int_bo.jld2" p_orig_int_bo
