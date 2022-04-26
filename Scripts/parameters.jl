@@ -5,7 +5,7 @@ using Distributions
 
 #initial parameter values
 #       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
-p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.001,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
+p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.1,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
 p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
 p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
 p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
@@ -100,10 +100,10 @@ struct f_p
     μA::Float64
 end
 
-pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
-         ts(0.1,   0.07432092, 0.2019663,     0.001,     0.001), #βHH
-         ts(0.1,   0.07432092,     0.001,     0.001, 0.2019663), #βAA
-         ts(0.001, 0.07432092, 0.2019663,     0.001,     0.001), #βHA
+pf = f_p(0.1,0.001,0.001, #1 = ΛA, 2 = γH, 3 = γA
+         ts(0.1,   0.07432092, 0.2019663,     0.001,     0.001), #4 = βHH
+         ts(0.1,   0.07432092,     0.001,     0.001, 0.2019663), #5 = βAA
+         ts(0.1,   0.07432092, 0.2019663,     0.001,     0.001), #6 = βHA
          ts(0.1,   0.07432092,     0.001,     0.001, 0.2019663), #βAH
          ts(0.1,   0.07432092,     0.001, 0.1420501, 0.2019663), #βAE
          ts(0.01,  0.07432092,     0.001, 0.1420501,     0.001), #βEA
@@ -113,7 +113,7 @@ pf = f_p(0.1,0.001,0.001, #ΛA, γH, γA
 pf2 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
          ts(0.1,   0.08109928, 0.20239149,     0.001,       0.001), #βHH
          ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAA
-         ts(0.001, 0.08109928, 0.20239149,     0.001,       0.001), #βHA
+         ts(0.1,   0.08109928, 0.20239149,     0.001,       0.001), #βHA
          ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAH
          ts(0.1,   0.08109928,      0.001, 0.23084954, 0.20239149), #βAE
          ts(0.01,  0.08109928,      0.001, 0.23084954,      0.001), #βEA
@@ -190,7 +190,8 @@ function get_params(transmission_scenario, experiment_num, n_sets,
     fixed_pars, uncertainty_pars, 
     bEH_exp, LA_exp)
     
-    #Order of parameters in model function: ΛH, ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βEH, βHE, μH, μA, μE
+    #Order of parameters in model function: 
+    #ΛH, ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βEH, βHE, μH, μA, μE
     p_mat = zeros(n_sets, 15)
 
     #Parameters that are the same in every run: ΛA, γH, γA, μA
@@ -219,13 +220,13 @@ function get_params(transmission_scenario, experiment_num, n_sets,
     p_mat[:,2] .= LA_exp[experiment_num]
 
     #bHA
-    if in([7,8]).(experiment_num)
+    if in([7,8, 12]).(experiment_num)
         p_mat[:,7] .= p_mat[:,7]./100
     end 
 
     #Uncertainty parameters
     #ΛH, μE, μH
-    p_mat[:, [1,13,15]] .= uncertainty_pars
+    p_mat[:, [1,15,13]] .= uncertainty_pars
 
     return p_mat
 
@@ -249,7 +250,6 @@ end
 # p_origs_v_bo = vec(map(x -> vec(x), [p_orig_bo, p_orig_int_bo]))
 
 # using JLD2
-
 # @save "/mnt/d/results_workspace_p_orig.jld2" p_orig
 # @save "/mnt/d/results_workspace_p_orig_bo.jld2" p_orig_bo
 # @save "/mnt/d/results_workspace_p_orig_int.jld2" p_orig_int
