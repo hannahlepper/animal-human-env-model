@@ -150,38 +150,38 @@ bEH_unif = rand(Uniform(0.000001, 1.), N)
 bEH_experiments_unbounded = [
     bEH_ts_1,  bEH_ts_1,   bEH_ts_1,
     0.1,    0.5,  0,
-    bEH_unif,    bEH_unif,    bEH_unif,   bEH_unif
+    bEH_unif,    bEH_unif,    bEH_unif,   bEH_unif, 0, 0, bEH_unif
 ]
 
 bEH_experiments_bounded = [
     bEH_ts_2,   bEH_ts_2,   bEH_ts_2,
     0.1,    0.5,   0,
-    bEH_unif,    bEH_unif,    bEH_unif,    bEH_unif
+    bEH_unif,    bEH_unif,    bEH_unif,    bEH_unif, 0, 0, bEH_unif
 ] 
 
 LA_unif = rand(Uniform(0.000001, 1.), N)
 LA_experiments = [
-    0.1, 0.0, 0.5, 0.1, 0.1, 0.1, 0., LA_unif, 0., LA_unif
+    0.1, 0.0, 0.5, 0.1, 0.1, 0.1, 0., LA_unif, 0., LA_unif, 0, 0, 0.1
 ]
 
 #Index for runs
-# Figure 2 data needed
 # 1. = fixed bEH, LA fixed to 0.1.
 # 2. = fixed bEH, LA fixed to 0.0.
 # 3. = fixed bEH, LA fixed to 0.5. mistake in previous code here - p_2 has varying bEH and varying lA?
 # 4. = bEH fixed to 0.1, fixed LA = 0.1. mistake in previous code - fixed bEH, varying LA
 # 5. = bEH fixed to 0.5, fixed LA = 0.1. mistake in previous code - fixed bEH = 0, fixed LA = 0.1
 # 6. = bEH fixed to 0, fixed LA = 0.1 - also needed for  fig 3.C. mistake in previous code - fixed bEH, fixed LA = 0
-
-#Figure 3 A and B data needed
 # 7. = varying bEH, low bHA, LA fixed to 0. mistake in previous code - fixed bEH = ts, fixed LA = 0.1
 # 8. = varying bEH, low bHA, varying LA. previous code - varying bEH, low bHA, LA fixed to 0.
 # 9. = varying bEH, high bHA, LA fixed to 0. previous code - varying bEH, low bHA, varying LA.
 # 10. = varying bEH, high bHA, varying LA. previous code - bEH and LA set to 0
+# 11. = bEH fixed to 0, LA fixed to 0, high/normal bHA
+# 12. = bEH fixed to 0, LA fixed to 0, low bHA
+# 13. = bEH varying, LA fixed to 1, normal bHA
 
 #Figure 3C data needed. Make separately so that
-# 11. original model - all environmnetal parameters set to 0, otherwise following baseline parameter values
-# 12. original model, with LA set to 0
+# original model - all environmnetal parameters set to 0, otherwise following baseline parameter values
+# original model, with LA set to 0
 
 
 #Function for getting parameters for a model run
