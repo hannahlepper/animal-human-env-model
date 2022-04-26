@@ -8,39 +8,47 @@ library(data.table)
 #Pv 1 and 4.
 #Impacts 3 and 4
 TS <- c("Baseline", "Balanced", "Human\ndominated", 
-          "Environment\ndominated", "Animal\ndominated")
-dfs <- adply(1:5, 1, function(ts) {
-    data.frame(param_val = c(Pv[[1]][[ts]][,11], Pv[[4]][[ts]][,2]),
-               param = rep(c("beta[EH]", "Lambda[A]"), 
-                           each = length(impact_3[[ts]])),
-               impact = c(impact_3[[ts]], impact_4[[ts]]),
-               ts = rep(TS[ts], length(impact_4[[ts]]) * 2))
+          "Animal\ndominated", "Environment\ndominated")
+dfs1 <- adply(1:5, 1, function(ts) {
+    data.frame(param = rep(c("beta[EH]", "Lambda[A]"), 
+                           each = length(bEH_impact_unbounded[[ts]])),
+               impact = c(bEH_impact_unbounded[[ts]], LA_impact_unbounded[[ts]]),
+               ts = rep(TS[ts], length(LA_impact_unbounded[[ts]]) * 2))
 }) %>%
-      data.table()
+      data.table() %>%
+      mutate(., ts = factor(ts, levels = c("Baseline", "Balanced", "Human\ndominated", 
+                                           "Environment\ndominated", "Animal\ndominated"), 
+                            ordered = TRUE),
+                model = "Unbounded environment")
 
-df_low <- dfs[param_val >= 0.095 & param_val <= 0.105]
-df_high <- dfs[param_val >= 0.495 & param_val <= 0.505]
+dfs2 <- adply(1:5, 1, function(ts) {
+    data.frame(param = rep(c("beta[EH]", "Lambda[A]"), 
+                           each = length(bEH_impact_bounded[[ts]])),
+               impact = c(bEH_impact_bounded[[ts]], LA_impact_bounded[[ts]]),
+               ts = rep(TS[ts], length(LA_impact_bounded[[ts]]) * 2))
+}) %>%
+      data.table() %>%
+      mutate(., ts = factor(ts, levels = c("Baseline", "Balanced", "Human\ndominated", 
+                                           "Environment\ndominated", "Animal\ndominated"), 
+                            ordered = TRUE),
+                 model = "Bounded environment")
 
+dfs <- bind_rows(dfs1, dfs2)
 label_parse <- function(breaks) parse(text = breaks)
 
-png("plots/boxplotFig2A.png", width = 15, height = 10, units = "cm", res = 300)
-p <- ggplot(df_low, aes(ts, impact, col = param)) + 
-      geom_boxplot() +
-      labs(x = "", y = "Impact") +
+print(dim(dfs))
+print(unique(dfs$model))
+print(head(dfs2))
+
+png("plots/boxplotFig2A.png", width = 15, height = 20, units = "cm", res = 300)
+p <- ggplot(dfs, aes(ts, impact, col = param)) + 
+      geom_violin(scale = "width") +
+      labs(x = "", y = expression(omega)) +
       scale_colour_discrete("Parameter targeted\nfor intervention", labels = label_parse) +
       theme_bw()+
-      theme(legend.position = c(0.15, 0.85),
-            legend.background = element_blank())
+      #theme(legend.position = c(0.15, 0.85),
+      #      legend.background = element_blank()) +
+      facet_wrap(~model, ncol = 1)
 print(p)
 dev.off()
 
-png("plots/boxplotFig2B.png", width = 15, height = 10, units = "cm", res = 300)
-p <- ggplot(df_high, aes(ts, impact, col = param)) + 
-      geom_boxplot() +
-      labs(x = "", y = "Impact") +
-      scale_colour_discrete("Parameter targeted\nfor intervention",labels = label_parse) +
-      theme_bw()+
-      theme(legend.position = c(0.15, 0.85),
-            legend.background = element_blank())
-print(p)
-dev.off()
