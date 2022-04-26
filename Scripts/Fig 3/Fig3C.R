@@ -41,13 +41,14 @@ p <- ggplot(df_unbounded, aes(bEH, mean_impact)) +
     #    colour = "black", size = .2) +
     geom_line(aes(col = TS)) +
     #stat_smooth(method = "loess") +
-    viridis::scale_colour_viridis() +
+    viridis::scale_colour_viridis( discrete = TRUE) +
     geom_ribbon(aes(ymin = lower, ymax = upper, fill = TS), 
       show.legend = FALSE, alpha = 0.2) +
     theme_bw(base_size = 7) +
     labs(y = expression(paste(omega)),
          x = expression(paste(beta[EH])),        
-         col = "Transmission\nscenario") 
-    #theme(legend.background = element_blank())
+         col = "") +
+    theme(legend.position = c(0.87, 0.8),
+          legend.background = element_blank())
 print(p)
 dev.off()

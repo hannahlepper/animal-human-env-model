@@ -56,6 +56,7 @@ R_int = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p_intervention[x]))(100
 
 impact = map(x -> 1 - (R_int[x][1] / R[x][1]), 1:6)
 
+R = R[1:5]
 @rput R R2
 R"source('Scripts/Fig 1/RHforeachTSplot.R')"
 

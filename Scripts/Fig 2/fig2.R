@@ -40,13 +40,13 @@ print(dim(dfs))
 print(unique(dfs$model))
 print(head(dfs2))
 
-png("plots/boxplotFig2A.png", width = 15, height = 20, units = "cm", res = 300)
+png("plots/boxplotFig2A.png", width = 20, height = 12, units = "cm", res = 300)
 p <- ggplot(dfs, aes(ts, impact, col = param)) + 
       geom_violin(scale = "width") +
       labs(x = "", y = expression(omega)) +
       scale_colour_discrete("Parameter targeted\nfor intervention", labels = label_parse) +
       theme_bw()+
-      theme(legend.position = c(0.15, 0.85),
+      theme(legend.position = c(0.1, 0.85),
             legend.background = element_blank()) +
       facet_wrap(~model, ncol = 2)
 print(p)

@@ -14,7 +14,7 @@ plot_heatmap2 <- function(df, title, lim, breaks) {
     scale_fill_viridis(limits = c(0, lim)) +
     labs(x = expression(paste(beta[EH])), 
          y = expression(paste(Lambda[A], " (Pre-intervention)")),
-         fill = expression(paste(omega[A])),
+         fill = expression(paste(omega)),
          title = title) +
     theme_bw()
 }
