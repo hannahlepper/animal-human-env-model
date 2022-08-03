@@ -3,14 +3,15 @@ using Distributions
 #using Plots
 #using RCall
 
+include("optim_parameters_HAE.jl") 
+
 #initial parameter values
 #       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
-p_B =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.1,      0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
-p_Bd = [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
-p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
-p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
-p_H =  [0.1, 0.1, 0.001, 0.001, 0.2019663,  0.001,      0.2019663,  0.001,      0.001,      0.001,      0.001,      0.2019663,  0.1, 0.1, 0.2]
-p = [p_B, p_Bd, p_E, p_A, p_H]
+p_Bd = [0.1, 0.1, 0.001, 0.001, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, 0.2, 0.4, 0.29]
+p_E =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      b_bounded_env,  b_bounded_env,  b_bounded_env,  b_bounded_env,  0.2, 0.4, 0.29]
+p_A =  [0.1, 0.1, 0.001, 0.001, 0.001,      b_bounded_anim,  0.001,      b_bounded_anim,  b_bounded_anim,  0.001,      0.001,      0.001,      0.2, 0.4, 0.29]
+p_H =  [0.1, 0.1, 0.001, 0.001, b_bounded_hum,  0.001,      b_bounded_hum,  0.001,      0.001,      0.001,      0.001,      b_bounded_hum,  0.2, 0.4, 0.29]
+p = [p_Bd, p_E, p_A, p_H]
 
 # R"""
 # library(ggplot2)
@@ -36,7 +37,6 @@ struct bp
 end
 
 struct ts
-    B
     Bd
     H
     E
@@ -51,39 +51,57 @@ struct vp
 end
 
 #beta distribution with mean = parameter selected in transmission scenarios, and var = mean/20
-# order reminder - p_B, p_Bd, p_H, p_E, p_A
-bEH_mu = [0.01, 0.07432092, 0.001, 0.1420501, 0.001]
+#ΛH 
+LHmu = 0.1 
+LHvar = LHmu/20
+LH_alpha = LHmu * ((LHmu * (1 - LHmu))/LHvar - 1)
+LH_beta = (1 - LHmu) * ((LHmu * (1 - LHmu))/LHvar - 1)
+
+#μE 
+mEmu = 0.29 
+mEvar = mEmu/20
+mE_alpha = mEmu * ((mEmu * (1 - mEmu))/mEvar - 1)
+mE_beta = (1 - mEmu) * ((mEmu * (1 - mEmu))/mEvar - 1)
+
+#μH 
+mHmu = 0.2 
+mHvar = mHmu/20
+mH_alpha = mHmu * ((mHmu * (1 - mHmu))/mHvar - 1)
+mH_beta = (1 - mHmu) * ((mHmu * (1 - mHmu))/mHvar - 1)
+
+# order reminder - p_Bd, p_H, p_E, p_A
+bEH_mu = [b_unbounded_bal, 0.001, b_unbounded_env, 0.001]
 bEH_var = bEH_mu./20
 
-bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
-bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:4)
+bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:4)
 
 pv = vp(ts(bp(bEH_alpha[1],bEH_beta[1]), 
            bp(bEH_alpha[2],bEH_beta[2]), 
            bp(bEH_alpha[3], bEH_beta[3]),
-           bp(bEH_alpha[4], bEH_beta[4]), 
-           bp(bEH_alpha[5], bEH_beta[5])), #βEH
-        bp(1.7, 15.3), #ΛH
-        bp(3, 12), #μE
-        bp(1.7, 15.3)) #μH
-bEH_ts_1 = ts(0.01, 0.07432092, 0.001, 0.1420501, 0.001)
+           bp(bEH_alpha[4], bEH_beta[4])), #βEH
+        bp(LH_alpha, LH_beta), #ΛH
+        bp(mE_alpha, mE_beta), #μE
+        bp(mH_alpha, mH_beta)) #μH
+bEH_ts_1 = bEH_mu
 
 
-bEH_mu = [0.01, 0.08109928, 0.001, 0.23084954, 0.001]
+bEH_mu = [b_bounded_bal, 0.001, b_bounded_env, 0.001]
 bEH_var = bEH_mu./20
 
-bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
-bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:5)
+bEH_alpha = map(i -> bEH_mu[i] * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:4)
+bEH_beta = map(i -> (1 - bEH_mu[i]) * ((bEH_mu[i] * (1 - bEH_mu[i]))/bEH_var[i] - 1), 1:4)
 
 pv2 = vp(ts(bp(bEH_alpha[1],bEH_beta[1]), 
            bp(bEH_alpha[2],bEH_beta[2]), 
            bp(bEH_alpha[3], bEH_beta[3]),
-           bp(bEH_alpha[4], bEH_beta[4]), 
-           bp(bEH_alpha[5], bEH_beta[5])), #βEH
-        bp(1.7, 15.3), #ΛH
-        bp(3, 12), #μE
-        bp(1.7, 15.3)) #μH
-bEH_ts_2 = ts(0.01, 0.08109928, 0.001, 0.23084954, 0.001)
+           bp(bEH_alpha[4], bEH_beta[4])), #βEH
+        bp(LH_alpha, LH_beta), #ΛH
+        bp(mE_alpha, mE_beta), #μE
+        bp(mH_alpha, mH_beta)) #μH
+bEH_ts_2 = bEH_mu
+
+bEH_ts_3 = [b_orig_bal, 0.001, b_orig_env, 0.001]
 
 #non varying parameters
 struct f_p
@@ -100,31 +118,45 @@ struct f_p
     μA::Float64
 end
 
+#Unbounded
 pf = f_p(0.1,0.001,0.001, #1 = ΛA, 2 = γH, 3 = γA
-         ts(0.1,   0.07432092, 0.2019663,     0.001,     0.001), #4 = βHH
-         ts(0.1,   0.07432092,     0.001,     0.001, 0.2019663), #5 = βAA
-         ts(0.1,   0.07432092, 0.2019663,     0.001,     0.001), #6 = βHA
-         ts(0.1,   0.07432092,     0.001,     0.001, 0.2019663), #βAH
-         ts(0.1,   0.07432092,     0.001, 0.1420501, 0.2019663), #βAE
-         ts(0.01,  0.07432092,     0.001, 0.1420501,     0.001), #βEA
-         ts(0.1,   0.07432092, 0.2019663, 0.1420501,     0.001), #βHE
-         0.1) #μA
 
+         ts(b_unbounded_bal, b_unbounded_hum,           0.001,            0.001), #4 = βHH
+         ts(b_unbounded_bal,           0.001,           0.001, b_unbounded_anim), #5 = βAA
+         ts(b_unbounded_bal, b_unbounded_hum,           0.001,            0.001), #6 = βHA
+         ts(b_unbounded_bal,           0.001,           0.001, b_unbounded_anim), #βAH
+         ts(b_unbounded_bal,           0.001, b_unbounded_env, b_unbounded_anim), #βAE
+         ts(b_unbounded_bal,           0.001, b_unbounded_env,            0.001), #βEA
+         ts(b_unbounded_bal, b_unbounded_hum, b_unbounded_env,            0.001), #βHE
+         0.4) #μA
+
+#Bounded
 pf2 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
-         ts(0.1,   0.08109928, 0.20239149,     0.001,       0.001), #βHH
-         ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAA
-         ts(0.1,   0.08109928, 0.20239149,     0.001,       0.001), #βHA
-         ts(0.1,   0.08109928,      0.001,     0.001,  0.20239149), #βAH
-         ts(0.1,   0.08109928,      0.001, 0.23084954, 0.20239149), #βAE
-         ts(0.01,  0.08109928,      0.001, 0.23084954,      0.001), #βEA
-         ts(0.1,   0.08109928, 0.20239149, 0.23084954,      0.001), #βHE
-         0.1) #μA
+         ts(b_bounded_bal, b_bounded_hum,         0.001,          0.001), #4 = βHH
+         ts(b_bounded_bal,         0.001,         0.001, b_bounded_anim), #5 = βAA
+         ts(b_bounded_bal, b_bounded_hum,         0.001,          0.001), #6 = βHA
+         ts(b_bounded_bal,         0.001,         0.001, b_bounded_anim), #βAH
+         ts(b_bounded_bal,         0.001, b_bounded_env, b_bounded_anim), #βAE
+         ts(b_bounded_bal,         0.001, b_bounded_env,          0.001), #βEA
+         ts(b_bounded_bal, b_bounded_hum, b_bounded_env,          0.001), #βHE
+         0.4) #μA
 
+#Original
+pf3 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
+         ts(b_orig_bal, b_orig_hum,       0.001,       0.001), #4 = βHH
+         ts(b_orig_bal,       0.001,      0.001, b_orig_anim), #5 = βAA
+         ts(b_orig_bal, b_orig_hum,       0.001,       0.001), #6 = βHA
+         ts(b_orig_bal,       0.001,      0.001, b_orig_anim), #βAH
+         ts(b_orig_bal,       0.001, b_orig_env, b_orig_anim), #βAE
+         ts(b_orig_bal,       0.001, b_orig_env,       0.001), #βEA
+         ts(b_orig_bal,  b_orig_hum, b_orig_env,       0.001), #βHE
+         0.4) #μA
 
 #set up parameter set that never changes first
 N = 2000000 
 p_uncertainty = zeros(N, 3)
 p_uncertainty2 = zeros(N, 3)
+p_uncertainty3 = zeros(N, 3)
 
 #Parameters varying to account for uncertainty
 using Random
@@ -137,6 +169,10 @@ p_uncertainty[:,3] .= rand(Beta(pv.μH.α, pv.μH.β), N)
 p_uncertainty2[:,1] .= rand(Beta(pv2.ΛH.α, pv2.ΛH.β), N)
 p_uncertainty2[:,2] .= rand(Beta(pv2.μE.α, pv2.μE.β), N)
 p_uncertainty2[:,3] .= rand(Beta(pv2.μH.α, pv2.μH.β), N)
+
+p_uncertainty3[:,1] .= rand(Beta(pv2.ΛH.α, pv2.ΛH.β), N)
+p_uncertainty3[:,2] .= rand(Beta(pv2.μE.α, pv2.μE.β), N)
+p_uncertainty3[:,3] .= rand(Beta(pv2.μH.α, pv2.μH.β), N)
 
 
 function col_edit(mat, col_index, replacement)
@@ -158,6 +194,8 @@ bEH_experiments_bounded = [
     0.1,    0.5,   0,
     bEH_unif,    bEH_unif,    bEH_unif,    bEH_unif, 0, 0, bEH_unif
 ] 
+
+bEH_experiments_orig = 0
 
 LA_unif = rand(Uniform(0.000001, 1.), N)
 LA_experiments = [
@@ -226,22 +264,25 @@ function get_params(transmission_scenario, experiment_num, n_sets,
 
     #Uncertainty parameters
     #ΛH, μE, μH
-    p_mat[:, [1,15,13]] .= uncertainty_pars
+    p_mat[:, [1,15,13]] .= uncertainty_pars[1:n_sets, :]
 
     return p_mat
 
 end
+
+get_params(2, 1, 2, 
+    pf3, p_uncertainty3, bEH_experiments_orig, LA_experiments)
 
 #11. Original model
 
 # 1  2  3  4  5   6   7   8   9   10  11  12  13  14  15
 # LH LA gH gA bHH bAA bHA bAH bAE bEA bEH bHE muH muA muE
      
-p_orig = get_params(1, 1, 2000000, pf, p_uncertainty, bEH_experiments_unbounded, LA_experiments)
-p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
+#p_orig = get_params(1, 1, 2000000, pf, p_uncertainty, bEH_experiments_unbounded, LA_experiments)
+#p_orig = col_edit(p_orig, [3,4,9,10,11,12,15], 0)
 
-p_orig_int = deepcopy(p_orig)
-p_orig_int = col_edit(p_orig_int, 2, 0)
+#p_orig_int = deepcopy(p_orig)
+#p_orig_int = col_edit(p_orig_int, 2, 0)
 
 # using JLD2
 # @save "/mnt/d/results_workspace_p_orig.jld2" p_orig

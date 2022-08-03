@@ -17,6 +17,14 @@ function boundeds(du, u, p, t)
     du[3] = (1 - RE) * (γH*ΛH + γA*ΛA + βAE*RA + βHE*RH) - μE*RE
 end
 
+function orig(du, u, p, t)
+    RH, RA, RE = u
+    ΛH, ΛA, γH, γA, βHH, βAA, βHA, βAH, βAE, βEA, βEH, βHE, μH, μA, μE = p
+    du[1] = (1 - RH) * (ΛH + βHH*RH + βAH*RA + 0 * βEH*RE) - μH*RH
+    du[2] = (1 - RA) * (ΛA + βAA*RA + βHA*RH + 0 * βEA*RE) - μA*RA
+    du[3] = 0 * (1 - RE) * (γH*ΛH + γA*ΛA + βAE*RA + βHE*RH) - μE*RE
+end
+
 #plot each transmission scenario
 u0 = [0.0; 0.0; 0.0]
 tspan = (0.0, 1000.)

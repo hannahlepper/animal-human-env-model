@@ -2,122 +2,60 @@
 using Optim
 using DifferentialEquations
 
+function dist_targ(model_targets, model_results) #gets model solution and compares to target - function to be minimised
+    #sum(abs2, model_results - model_targets)
+    (model_results - model_targets)^2
+end
 
-function mod_bal(du, u, p, t)
+function mod(du, u, p, t)
     RH, RA, RE = u
-    ΛH, ΛA, γH, γA, μH, μA, μE, bo, β = p
-    du[1] = (1 - RH) * (ΛH + β*RH + β*RA + β*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + β*RA + β*RH + β*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + β*RA + β*RH) - μE*RE
+    γH, γA, μH, μA, μE, ΛH, ΛA, βHH, βAA, βAH, βHA, βEH, βEA, βHE, βAE, bound, orig = p
+    du[1] = (1 - RH) * (ΛH + βHH*RH + βAH*RA + orig*βEH*RE) - μH*RH
+    du[2] = (1 - RA) * (ΛA + βAA*RA + βHA*RH + orig*βEA*RE) - μA*RA
+    du[3] = orig * ((1 - bound * RE) * (γH*ΛH + γA*ΛA + βAE*RA + βHE*RH) - μE*RE)
 end
 
-function mod_baslowHA(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA, μH, μA, μE, βha, β, βE, bo = p
-    du[1] = (1 - RH) * (ΛH + β*RH + β*RA + βE*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + β*RA + βha*RH + βE*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + β*RA + β*RH) - μE*RE
-end
+function dist(x, targ, mod, bound, orig, TS, return_sol)
+    
+    γH, γA, μH, μA, μE, ΛH, ΛA = [0.001, 0.001, 0.2, 0.4, 0.29, 0.1, 0.1] #specify constant parameters
 
-function mod_bashighHA(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA, μH, μA, μE, β, βE, bo = p
-    du[1] = (1 - RH) * (ΛH + β*RH + β*RA + βE*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + β*RA + β*RH + βE*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + β*RA + β*RH) - μE*RE
-end
+    #Specify parameters for different transmission scenarios
+    if TS == :balance
+        βHH = βAA = βAH = βHA = βEH = βEA = βHE = βAE = x  #All parameters to be the minimizer
+    elseif TS == :human
+        βHH = βHA = βHE = x #Some parameters to be the minimizer
+        βAA = βAH = βEH = βEA = βAE = 0.001 #Others to be set low
+    elseif TS == :animal
+        βAA = βAH = βAE = x 
+        βHH = βHA = βEH = βHE = βEA = 0.001
+    elseif TS == :environment
+        βEH = βEA = βHE = βAE = x  
+        βHH = βAA = βAH = βHA = 0.001
+    end
 
-function mod_hum(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA, μH, μA, μE, β, βH, bo = p
-    du[1] = (1 - RH) * (ΛH + βH*RH + β*RA + β*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + β*RA + βH*RH + β*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + β*RA + βH*RH) - μE*RE
+    p = [γH, γA, μH, μA, μE, ΛH, ΛA, βHH, βAA, βAH, βHA, βEH, βEA, βHE, βAE, bound, orig]
+    u0 = [0.0; 0.0; 0.0] #initial conditions
+    tspan = (0.0, 1000.) #time span
+    prob = ODEProblem(mod, u0, tspan, p) #define model as correct type
+    sol = solve(prob) #obtain model solution
+    if return_sol
+        sol = solve(prob) #return solution (for checking)
+    else
+        dist_targ(targ, sol(1000)[1]) #or return distance between target and solution (for fitting)
+    end
 end
-
-function mod_anim(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA,  μH, μA, μE, β, βA, bo = p
-    du[1] = (1 - RH) * (ΛH + β*RH + βA*RA + β*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + βA*RA + β*RH + β*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + βA*RA + β*RH) - μE*RE
-end
-
-function mod_env(du, u, p, t)
-    RH, RA, RE = u
-    ΛH, ΛA, γH, γA,  μH, μA, μE, β, βE, bo = p
-    du[1] = (1 - RH) * (ΛH + β*RH + β*RA + βE*RE) - μH*RH
-    du[2] = (1 - RA) * (ΛA + β*RA + β*RH + βE*RE) - μA*RA
-    du[3] = (1 - bo * RE) * (γH*ΛH + γA*ΛA + βE*RA + βE*RH) - μE*RE
-end
-
-function dist_targ(model_result) #gets model solution and compares to target - function to be minimised
-    abs(0.71 - model_result)
-end
-
-function dist_bd(b, bo) # solves balanced model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2, bo, b]
-    prob = ODEProblem(mod_bal, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
-function dist_h(b, bo) # solves human model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2, 0.001, b, bo]
-    prob = ODEProblem(mod_hum, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
-function dist_a(b, bo) # solves animal model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2, 0.001, b, bo]
-    prob = ODEProblem(mod_anim, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
-function dist_e(b, bo) # solves env model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2, 0.001, b, bo]
-    prob = ODEProblem(mod_env, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
-function dist_bhighHA(b, bo) #solves baseline 1 model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2,  0.1, b, bo]
-    prob = ODEProblem(mod_bashighHA, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
-function dist_blowHA(b, bo) #solves baseline 2 model
-    u0 = [0.0; 0.0; 0.0]
-    tspan = (0.0, 1000.)
-    p = [0.1, 0.1, 0.001, 0.001, 0.1, 0.1, 0.2, 0.001, 0.1, b, bo]
-    prob = ODEProblem(mod_baslowHA, u0, tspan, p)
-    sol = solve(prob)
-    dist_targ(sol(1000)[1])
-end
-
 
 
 #optimise for the different transmission scenarios
-b_res = map(bo -> optimize(b -> dist_bd(b, bo), 0.0, 1.0).minimizer, 0:1) #0.07432092
+b_bounded = map(ts -> optimize(b -> dist(b, 0.358, mod, 1, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
+b_unbounded = map(ts -> optimize(b -> dist(b, 0.358, mod, 0, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
+b_orig = map(ts -> optimize(b -> dist(b, 0.358, mod, 0, 0, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
 
-blLHA_res = map(bo -> optimize(b -> dist_blowHA(b, bo), 0., 1.).minimizer, 0:1) #0.01521419
-blHHA_res = map(bo -> optimize(b -> dist_bhighHA(b, bo), 0., 1.).minimizer, 0:1) #0.003976815
+#             balance    human   animal   environment
+#bounded       0.0188   0.0315   0.0510        0.0798
+#unbounded     0.0188   0.0315   0.0510        0.0741
+#original      0.0200   0.0316   0.0512             -
 
-e_res = map(bo -> optimize(b -> dist_e(b, bo), 0., 1.).minimizer, 0:1) #0.1420501
-h_res = map(bo -> optimize(b -> dist_h(b, bo), 0., 1.).minimizer, 0:1) #0.2019663
-a_res = map(bo -> optimize(b -> dist_a(b, bo), 0., 1.).minimizer, 0:1) #0.2019663
-#these agree with plots I have made in Mathematica - happy with the results.
+b_bounded_bal, b_bounded_hum, b_bounded_anim, b_bounded_env = b_bounded
+b_unbounded_bal, b_unbounded_hum, b_unbounded_anim, b_unbounded_env = b_unbounded
+b_orig_bal, b_orig_hum, b_orig_anim, b_orig_env = b_orig
