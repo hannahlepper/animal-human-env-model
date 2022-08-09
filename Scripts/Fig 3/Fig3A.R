@@ -6,12 +6,16 @@ print("starting...")
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 #myP <- colorRampPalette(c("#070066","#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"))
 library(viridis)
-plot_heatmap2 <- function(df, title, lim, breaks) {
+plot_heatmap2 <- function(df, title, breaks) {
+  df_summary <- df %>% mutate(., x_cut = cut(x, seq(0, 1, 0.1)), y_cut = cut(y, seq(0, 1, 0.1))) %>%
+    ddply(., .(x_cut, y_cut), summarise, mean_impact = mean(impact))
+  med_impact <- signif(mean(df_summary$mean_impact), 2)
+  max_impact <- signif(max(df_summary$mean_impact), 2)
   ggplot(df, aes(x, y, z = impact)) +
     stat_summary_2d(binwidth = 0.1) +
     #scale_fill_gradientn(colors = myP(100), limits = c(0, lim),
     #    breaks = breaks) +
-    scale_fill_viridis(limits = c(0, lim)) +
+    scale_fill_viridis(breaks = c(0, med_impact, max_impact)) + #limits = c(0, lim)) +
     labs(x = expression(paste(beta[EH])), 
          y = expression(paste(Lambda[A], " (Pre-intervention)")),
          fill = expression(paste(omega)),
@@ -34,15 +38,15 @@ df_list_bounded <- lapply(1:4, function(ts) {
 })
 
 #Get legend
-legenddf <- df_list_unbounded[[1]]
-legend_plot <- plot_heatmap2(legenddf, paste0(TS[1], " transmission scenario"), lim = 0.5, breaks = c(0, 0.05, 0.1,0.5))
-legend_to_plot <- cowplot::get_legend(legend_plot)
+#legenddf <- df_list_unbounded[[1]]
+#legend_plot <- plot_heatmap2(legenddf, paste0(TS[1], " transmission scenario"))
+#legend_to_plot <- cowplot::get_legend(legend_plot)
 
 plot_list_appendix_unbounded <- lapply(1:4, function(ts) {
   if (ts < 6) {
     df <- df_list_unbounded[[ts]]
-    gplot <- plot_heatmap2(df, paste0(TS[ts]), lim = 0.5, breaks = c(0, 0.05, 0.1, 0.5))
-    gplot <- gplot + theme(legend.position = "none")
+    gplot <- plot_heatmap2(df, paste0(TS[ts]))
+    gplot <- gplot + theme(legend.position = "bottom")
     return(gplot)
   } else {
     return(legend_to_plot)
@@ -52,20 +56,20 @@ plot_list_appendix_unbounded <- lapply(1:4, function(ts) {
 plot_list_appendix_bounded <- lapply(1:4, function(ts) {
   if (ts < 6) {
     df <- df_list_bounded[[ts]]
-    gplot <- plot_heatmap2(df, paste0(TS[ts]), lim = 0.5, breaks = c(0, 0.05, 0.1, 00.5))
-    gplot <- gplot + theme(legend.position = "none")
+    gplot <- plot_heatmap2(df, paste0(TS[ts]))
+    gplot <- gplot + theme(legend.position = "bottom")
     return(gplot)
   } else {
     return(legend_to_plot)
   }
 })
 
-png("plots/AppendixFig2Unbounded.png", width = 18, height = 23, units = "cm", res = 300)
-do.call(grid.arrange, plot_list_appendix_bounded)
+png("plots/AppendixFig2Unbounded.png", width = 25, height = 23, units = "cm", res = 300)
+do.call(grid.arrange, plot_list_appendix_unbounded)
 dev.off()
 
-png("plots/AppendixFig2Bounded.png", width = 18, height = 23, units = "cm", res = 300)
-do.call(grid.arrange, plot_list_appendix_unbounded)
+png("plots/AppendixFig2Bounded.png", width = 25, height = 23, units = "cm", res = 300)
+do.call(grid.arrange, plot_list_appendix_bounded)
 dev.off()
 
 #For figures for within the text

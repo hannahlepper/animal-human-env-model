@@ -5,7 +5,7 @@ myP <- colorRampPalette(c("#1100FA","#FFFFFF", "#FFC803"))
 plot_heatmap2 <- function(df, title) {
   ggplot(df, aes(x, y, z = impact)) +
     stat_summary_2d(binwidth = 0.1) +
-    scale_fill_gradientn(colors = myP(100), limits = c(0, 0.5)) +
+    scale_fill_gradientn(colors = myP(100), limits = c(0, 0.3)) +
     labs(x = expression(paste("Transmission from environment to humans (", beta[EH], ")")), 
          y = expression(paste("Pre-intervention antibiotic consumption in animals (", Lambda[A], ")")),
          title = title) +
