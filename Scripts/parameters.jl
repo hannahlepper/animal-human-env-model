@@ -64,7 +64,7 @@ mE_alpha = mEmu * ((mEmu * (1 - mEmu))/mEvar - 1)
 mE_beta = (1 - mEmu) * ((mEmu * (1 - mEmu))/mEvar - 1)
 
 #μH 
-mHmu = 0.2 
+mHmu = 0.118 
 mHvar = mHmu/20
 mH_alpha = mHmu * ((mHmu * (1 - mHmu))/mHvar - 1)
 mH_beta = (1 - mHmu) * ((mHmu * (1 - mHmu))/mHvar - 1)
@@ -128,7 +128,7 @@ pf = f_p(0.1,0.001,0.001, #1 = ΛA, 2 = γH, 3 = γA
          ts(b_unbounded_bal,           0.001, b_unbounded_env, b_unbounded_anim), #βAE
          ts(b_unbounded_bal,           0.001, b_unbounded_env,            0.001), #βEA
          ts(b_unbounded_bal, b_unbounded_hum, b_unbounded_env,            0.001), #βHE
-         0.4) #μA
+         mHmu*2) #μA
 
 #Bounded
 pf2 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
@@ -139,7 +139,7 @@ pf2 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
          ts(b_bounded_bal,         0.001, b_bounded_env, b_bounded_anim), #βAE
          ts(b_bounded_bal,         0.001, b_bounded_env,          0.001), #βEA
          ts(b_bounded_bal, b_bounded_hum, b_bounded_env,          0.001), #βHE
-         0.4) #μA
+         mHmu*2) #μA
 
 #Original
 pf3 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
@@ -150,7 +150,7 @@ pf3 = f_p(0.1,0.001,0.001, #ΛA, γH, γA
          ts(b_orig_bal,       0.001, b_orig_env, b_orig_anim), #βAE
          ts(b_orig_bal,       0.001, b_orig_env,       0.001), #βEA
          ts(b_orig_bal,  b_orig_hum, b_orig_env,       0.001), #βHE
-         0.4) #μA
+         mHmu*2) #μA
 
 #set up parameter set that never changes first
 N = 2000000 
@@ -195,7 +195,7 @@ bEH_experiments_bounded = [
     bEH_unif,    bEH_unif,    bEH_unif,    bEH_unif, 0, 0, bEH_unif
 ] 
 
-bEH_experiments_orig = 0
+bEH_experiments_orig = [0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 LA_unif = rand(Uniform(0.000001, 1.), N)
 LA_experiments = [
@@ -248,14 +248,20 @@ function get_params(transmission_scenario, experiment_num, n_sets,
 
     #2. Experiment-related fixed parameters
     #bEH
-    if typeof(bEH_exp[experiment_num]) == ts
-        p_mat[:,11] .= getfield(bEH_exp[experiment_num], transmission_scenario)
-    else
+    if length(bEH_exp[experiment_num]) == 4
+        p_mat[:,11] .= bEH_exp[experiment_num][transmission_scenario]
+    elseif length(bEH_exp[experiment_num]) > 4
+        p_mat[:,11] = bEH_exp[experiment_num][1:n_sets]
+    elseif length(bEH_exp[experiment_num]) == 1
         p_mat[:,11] .= bEH_exp[experiment_num]
     end
 
     #LA
-    p_mat[:,2] .= LA_exp[experiment_num]
+    if length(LA_exp[experiment_num]) > 1
+        p_mat[:,2] = LA_exp[experiment_num][1:n_sets]
+    else
+        p_mat[:,2] .= LA_exp[experiment_num]
+    end 
 
     #bHA
     if in([7,8, 12]).(experiment_num)
@@ -270,8 +276,7 @@ function get_params(transmission_scenario, experiment_num, n_sets,
 
 end
 
-get_params(2, 1, 2, 
-    pf3, p_uncertainty3, bEH_experiments_orig, LA_experiments)
+get_params(1, 13, 2, pf3, p_uncertainty3, bEH_experiments_orig, LA_experiments)
 
 #11. Original model
 

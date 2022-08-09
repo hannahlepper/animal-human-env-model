@@ -1,12 +1,12 @@
 #Get env model df
-TS <- c("Baseline", "Balanced", "Human\ndominated", "Animal\ndominated",  "Environment\ndominated")
-df_unbounded <- lapply(1:5, function(ts) {
+TS <- c("Balanced", "Human\ndominated", "Animal\ndominated",  "Environment\ndominated")
+df_unbounded <- lapply(1:4, function(ts) {
   df <- data.frame(bEH = as.numeric(bEH_unif[1:200000]), 
                    impact = fig3C_impacts_unbounded[[ts]][1:200000],
                    TS = TS[ts]) 
 }) %>% bind_rows() %>%
   mutate(., pv_cut = cut(bEH, seq(0., 1., 0.01)),
-    TS = factor(TS, levels = c("Baseline", "Balanced", "Human\ndominated", 
+    TS = factor(TS, levels = c("Balanced", "Human\ndominated", 
                                            "Environment\ndominated", "Animal\ndominated"), 
                             ordered = TRUE)) %>%
   ddply(., .(pv_cut, TS), summarise, 
@@ -23,11 +23,11 @@ df_unbounded <- lapply(1:5, function(ts) {
 
 print(head(df_unbounded))
 #Get original data
-df_orig_unbounded = data.frame(bEH = 0, TS = "No environment",
-  mean_impact = mean(impact_orig), 
-  med_impact = median(impact_orig),
-  lower = quantile(impact_orig, probs = .25), 
-  upper = quantile(impact_orig, probs = .75))
+# df_orig_unbounded = data.frame(bEH = 0, TS = "No environment",
+#   mean_impact = mean(impact_orig), 
+#   med_impact = median(impact_orig),
+#   lower = quantile(impact_orig, probs = .25), 
+#   upper = quantile(impact_orig, probs = .75))
 
 #dummy data
 #df_unbounded = data.frame(impact = rnorm(10000), TS = sample(letters[1:4], 10000, replace = TRUE), bEH = rbeta(10000, 1,1))

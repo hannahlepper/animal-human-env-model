@@ -7,28 +7,28 @@ library(data.table)
 
 #Pv 1 and 4.
 #Impacts 3 and 4
-TS <- c("Baseline", "Balanced", "Human\ndominated", 
+TS <- c("Balanced", "Human\ndominated", 
           "Animal\ndominated", "Environment\ndominated")
-dfs1 <- adply(1:5, 1, function(ts) {
+dfs1 <- adply(1:4, 1, function(ts) {
     data.frame(param = rep(c("beta[EH]", "Lambda[A]"), 
                            each = length(bEH_impact_unbounded[[ts]])),
                impact = c(bEH_impact_unbounded[[ts]], LA_impact_unbounded[[ts]]),
                ts = rep(TS[ts], length(LA_impact_unbounded[[ts]]) * 2))
 }) %>%
       data.table() %>%
-      mutate(., ts = factor(ts, levels = c("Baseline", "Balanced", "Human\ndominated", 
+      mutate(., ts = factor(ts, levels = c("Balanced", "Human\ndominated", 
                                            "Environment\ndominated", "Animal\ndominated"), 
                             ordered = TRUE),
                 model = "Unbounded environment")
 
-dfs2 <- adply(1:5, 1, function(ts) {
+dfs2 <- adply(1:4, 1, function(ts) {
     data.frame(param = rep(c("beta[EH]", "Lambda[A]"), 
                            each = length(bEH_impact_bounded[[ts]])),
                impact = c(bEH_impact_bounded[[ts]], LA_impact_bounded[[ts]]),
                ts = rep(TS[ts], length(LA_impact_bounded[[ts]]) * 2))
 }) %>%
       data.table() %>%
-      mutate(., ts = factor(ts, levels = c("Baseline", "Balanced", "Human\ndominated", 
+      mutate(., ts = factor(ts, levels = c("Balanced", "Human\ndominated", 
                                            "Environment\ndominated", "Animal\ndominated"), 
                             ordered = TRUE),
                  model = "Bounded environment")
@@ -40,9 +40,14 @@ print(dim(dfs))
 print(unique(dfs$model))
 print(head(dfs2))
 
+dfs_summary <- ddply(dfs, .(ts, param, model), summarise, 
+      mean_impact = mean(impact), lwr = quantile(impact, 0.25), 
+      upr = quantile(impact, 0.75))
+
 png("plots/boxplotFig2A.png", width = 20, height = 12, units = "cm", res = 300)
-p <- ggplot(dfs, aes(ts, impact, col = param)) + 
-      geom_violin(scale = "width") +
+p <- ggplot(dfs_summary, aes(ts, mean_impact, col = param)) + 
+      geom_pointrange(aes(ymin = lwr, ymax = upr), shape = 1,
+                     position = position_dodge(width = 0.2)) +
       labs(x = "", y = expression(omega)) +
       scale_colour_discrete("Parameter targeted\nfor intervention", labels = label_parse) +
       theme_bw()+

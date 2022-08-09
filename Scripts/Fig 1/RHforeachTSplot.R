@@ -5,18 +5,18 @@ R2 <- unlist(R2)
 #R = rbeta(3 * 5, 1, 1)
 Rdf <- data.frame(
         R = R, model = "Unbounded\nenvironment",
-        R_type = factor(rep(c("RH", "RA", "RE"), times = 5)),
-        TS = rep(c("Baseline", "Balanced", "Environment\ndominated", "Animal\ndominated", "Human\ndominated"), each = 3))
+        R_type = factor(rep(c("RH", "RA", "RE"), times = 4)),
+        TS = rep(c("Balanced", "Environment\ndominated", "Animal\ndominated", "Human\ndominated"), each = 3))
 
 Rdf2 <- data.frame(
         R = R2, model = "Bounded\nenvironment",
-        R_type = factor(rep(c("RH", "RA", "RE"), times = 5)),
-        TS = rep(c("Baseline", "Balanced", "Environment\ndominated", "Animal\ndominated", "Human\ndominated"), each = 3))
+        R_type = factor(rep(c("RH", "RA", "RE"), times = 4)),
+        TS = rep(c("Balanced", "Environment\ndominated", "Animal\ndominated", "Human\ndominated"), each = 3))
 
 Rdf <- bind_rows(Rdf, Rdf2) %>%
     subset(., (R_type == "RE")) %>%
     mutate(., TS = factor(TS, 
-                        levels = c("Baseline", "Balanced", "Human\ndominated", 
+                        levels = c("Balanced", "Human\ndominated", 
                                     "Environment\ndominated", "Animal\ndominated"),
                         ordered = TRUE),
              R_type = factor(R_type, levels = c("RH", "RA", "RE"),

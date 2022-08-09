@@ -17,7 +17,7 @@ end
 
 function dist(x, targ, mod, bound, orig, TS, return_sol)
     
-    γH, γA, μH, μA, μE, ΛH, ΛA = [0.001, 0.001, 0.2, 0.4, 0.29, 0.1, 0.1] #specify constant parameters
+    γH, γA, μH, μA, μE, ΛH, ΛA = [0.001, 0.001, 0.118, 0.118*2, 0.29, 0.1, 0.1] #specify constant parameters
 
     #Specify parameters for different transmission scenarios
     if TS == :balance
@@ -47,9 +47,9 @@ end
 
 
 #optimise for the different transmission scenarios
-b_bounded = map(ts -> optimize(b -> dist(b, 0.358, mod, 1, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
-b_unbounded = map(ts -> optimize(b -> dist(b, 0.358, mod, 0, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
-b_orig = map(ts -> optimize(b -> dist(b, 0.358, mod, 0, 0, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
+b_bounded = map(ts -> optimize(b -> dist(b, 0.541, mod, 1, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
+b_unbounded = map(ts -> optimize(b -> dist(b, 0.541, mod, 0, 1, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
+b_orig = map(ts -> optimize(b -> dist(b, 0.541, mod, 0, 0, ts, false), 0.0, 1.0).minimizer, [:balance, :human, :animal, :environment]) 
 
 #             balance    human   animal   environment
 #bounded       0.0188   0.0315   0.0510        0.0798
@@ -59,3 +59,8 @@ b_orig = map(ts -> optimize(b -> dist(b, 0.358, mod, 0, 0, ts, false), 0.0, 1.0)
 b_bounded_bal, b_bounded_hum, b_bounded_anim, b_bounded_env = b_bounded
 b_unbounded_bal, b_unbounded_hum, b_unbounded_anim, b_unbounded_env = b_unbounded
 b_orig_bal, b_orig_hum, b_orig_anim, b_orig_env = b_orig
+
+transmission_scenario = [:balance, :human, :animal, :environment]
+map(ts -> dist(b_bounded[ts], 0.541, mod, 1, 1, transmission_scenario[ts], true)(1000), 1:4)
+map(ts -> dist(b_unbounded[ts], 0.541, mod, 0, 1, transmission_scenario[ts], true)(1000), 1:4)
+map(ts -> dist(b_orig[ts], 0.541, mod, 0, 0, transmission_scenario[ts], true)(1000), 1:4)

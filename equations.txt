@@ -1,0 +1,7 @@
+dR_H/dt = (1 - R_H) ⋅ (Λ_H + β_HH⋅R_H + β_AH⋅R_A + β_EH⋅R_E) - μ_H⋅R_H  
+dR_A/dt = (1 - R_A) ⋅ (Λ_A + β_AA⋅R_A + β_HA⋅R_A + β_EA⋅R_E) - μ_A⋅R_A
+dR_E/dt = γ_H⋅Λ_H + γ_A⋅Λ_A + β_HE⋅R_H + β_AE⋅R_A - μ_E⋅R_E  
+
+dR_E/dt = (1 - R_E) ⋅ (γ_H⋅Λ_H + γ_A⋅Λ_A + β_HE⋅R_H + β_AE⋅R_A) - μ_E⋅R_E  
+
+ω = 1 - (RI_H^*)/(R_H^*)

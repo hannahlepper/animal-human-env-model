@@ -1,4 +1,4 @@
-TS <- c("Baseline", "Balanced", "Human\ndominated", "Animal\ndominated", "Environment\ndominated")
+TS <- c("Balanced", "Human\ndominated", "Animal\ndominated", "Environment\ndominated")
 
 df_unbounded <- lapply(1:length(f3_impacts_unbounded), function(ts) {
     data.frame(TS = TS[ts], impact = f3_impacts_unbounded[[ts]], mod = "Unbounded")
@@ -10,8 +10,10 @@ df_bounded <- lapply(1:length(f3_impacts_bounded), function(ts) {
 }) %>%
     bind_rows()
 
-df_orig <- data.frame(TS = "Baseline",
-  impact = impact_orig, mod = "None")
+df_orig <- lapply(1:length(f3_impacts_original), function(ts) {
+    data.frame(TS = TS[ts], impact = f3_impacts_original[[ts]], mod = "Original")
+}) %>%
+    bind_rows()
 
 
 df <- bind_rows(df_unbounded, df_bounded, df_orig) %>%
@@ -21,7 +23,7 @@ df <- bind_rows(df_unbounded, df_bounded, df_orig) %>%
         lower = quantile(impact, .25), 
         upper = quantile(impact, .75), 
         sd = sd(impact)) %>%
-    mutate(., TS = factor(TS, levels = c("Baseline", "Balanced", "Human\ndominated", 
+    mutate(., TS = factor(TS, levels = c("Balanced", "Human\ndominated", 
                                            "Environment\ndominated", "Animal\ndominated"), 
                             ordered = TRUE))
 

@@ -28,57 +28,80 @@ R"source('Scripts/libraries.R')"
 #Fig 1 B
 #Bar plot of RH, RA, and RE values - deterministic results
 #initial parameter values
+include("optim_parameters_HAE.jl")
+
 #          LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
-p_B =     [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.1,        0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
-p_Bd =    [0.1, 0.1, 0.001, 0.001, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.07432092, 0.1, 0.1, 0.2]
-p_E =     [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.1420501,  0.1420501,  0.1420501,  0.1420501,  0.1, 0.1, 0.2]
-p_A =     [0.1, 0.1, 0.001, 0.001, 0.001,      0.2019663,  0.001,      0.2019663,  0.2019663,  0.001,      0.001,      0.001,      0.1, 0.1, 0.2]
-p_H =     [0.1, 0.1, 0.001, 0.001, 0.2019663,  0.001,      0.2019663,  0.001,      0.001,      0.001,      0.001,      0.2019663,  0.1, 0.1, 0.2]
-p_orig =  [0.1, 0.1, 0.00,  0.00,  0.1,        0.1,        0.1,        0.1,        0.,         0.0,        0.0,        0.,         0.1, 0.1, 0.2]
-p = [p_B, p_Bd, p_E, p_A, p_H, p_orig]
+p_Bd =    [0.1, 0.1, 0.001, 0.001, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, 0.2, 0.4, 0.29]
+p_E =     [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      b_unbounded_env,  b_unbounded_env,  b_unbounded_env,  b_unbounded_env,  0.2, 0.4, 0.29]
+p_A =     [0.1, 0.1, 0.001, 0.001, 0.001,      b_unbounded_anim,  0.001,      b_unbounded_anim,  b_unbounded_anim,  0.001,      0.001,      0.001,      0.2, 0.4, 0.29]
+p_H =     [0.1, 0.1, 0.001, 0.001, b_unbounded_hum,  0.001,      b_unbounded_hum,  0.001,      0.001,      0.001,      0.001,      b_unbounded_hum,  0.2, 0.4, 0.29]
+p_orig =  [0.1, 0.1, 0.00,  0.00,  0.1,        0.1,        0.1,        0.1,        0.,         0.0,        0.0,        0.,         0.2, 0.4, 0.29]
+p = [p_Bd, p_E, p_A, p_H, p_orig]
 
 #       LH   LA   gH     gA     bHH         bAA         bHA         bAH         bAE         bEA         bEH         bHE         muH  muA  muE
-p_B2 =  [0.1, 0.1, 0.001, 0.001, 0.1,        0.1,        0.1,        0.1,        0.1,        0.01,       0.01,       0.1,        0.1, 0.1, 0.2]
-p_Bd2 = [0.1, 0.1, 0.001, 0.001, 0.08109928, 0.08109928, 0.08109928, 0.08109928, 0.08109928, 0.08109928, 0.08109928, 0.08109928, 0.1, 0.1, 0.2]
-p_E2 =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      0.23084954, 0.23084954, 0.23084954, 0.23084954, 0.1, 0.1, 0.2]
-p_A2 =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.20239149, 0.001,      0.20239149, 0.20239149,  0.001,     0.001,      0.001,      0.1, 0.1, 0.2]
-p_H2 =  [0.1, 0.1, 0.001, 0.001, 0.20239149, 0.001,      0.20239149,  0.001,      0.001,      0.001,     0.001,      0.20239149, 0.1, 0.1, 0.2]
-p2 = [p_B2, p_Bd2, p_E2, p_A2, p_H2]
+p_Bd2 = [0.1, 0.1, 0.001, 0.001, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, b_bounded_bal, 0.2, 0.4, 0.29]
+p_E2 =  [0.1, 0.1, 0.001, 0.001, 0.001,      0.001,      0.001,      0.001,      b_bounded_env, b_bounded_env, b_bounded_env, b_bounded_env, 0.2, 0.4, 0.29]
+p_A2 =  [0.1, 0.1, 0.001, 0.001, 0.001,      b_bounded_anim, 0.001,      b_bounded_anim, b_bounded_anim,  0.001,     0.001,      0.001,      0.2, 0.4, 0.29]
+p_H2 =  [0.1, 0.1, 0.001, 0.001, b_bounded_hum, 0.001,      b_bounded_hum,  0.001,      0.001,      0.001,     0.001,      b_bounded_hum, 0.2, 0.4, 0.29]
+p2 = [p_Bd2, p_E2, p_A2, p_H2]
 
 p_intervention = deepcopy(p)
 foreach(xs -> xs[2] = 0, p_intervention)
 
 include("model.jl")
-R = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(1000), 1:6)
-R2 = map(x -> solve(ODEProblem(boundeds, u0, tspan, p2[x]))(1000), 1:5)
+R = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p[x]))(1000), 1:5)
+R2 = map(x -> solve(ODEProblem(boundeds, u0, tspan, p2[x]))(1000), 1:4)
 
-R_int = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p_intervention[x]))(1000), 1:6)
+R_int = map(x -> solve(ODEProblem(unboundeds, u0, tspan, p_intervention[x]))(1000), 1:5)
 
-impact = map(x -> 1 - (R_int[x][1] / R[x][1]), 1:6)
+impact = map(x -> 1 - (R_int[x][1] / R[x][1]), 1:5)
 
-R = R[1:5]
+R = R[1:4]
 @rput R R2
 R"source('Scripts/Fig 1/RHforeachTSplot.R')"
+
+u0 = [0.0; 0.0; 0.0]
+tspan = (0.0, 1000.)
+#       LH   LA   gH     gA              bHH              bAA              bHA              bAH              bAE              bEA              bEH              bHE  muH  muA   muE
+p = [0.1, 0.1, 0.001, 0.001, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, 0.118, 0.118, 0.29]
+t1 = solve(ODEProblem(unboundeds, u0, tspan, p))(1000)
+
+#       LH   LA   gH     gA              bHH              bAA              bHA              bAH              bAE              bEA              bEH              bHE  muH  muA   muE
+p = [0.1, 0.1, 0.001, 0.001, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal*2, b_unbounded_bal, 0.118, 0.118, 0.29]
+t2 = solve(ODEProblem(unboundeds, u0, tspan, p))(1000)
+
+#       LH   LA   gH     gA              bHH              bAA              bHA              bAH              bAE              bEA              bEH              bHE  muH  muA   muE
+p = [0.1, 0., 0.001, 0.001, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, 0.118, 0.118, 0.29]
+t1int = solve(ODEProblem(unboundeds, u0, tspan, p))(1000)
+
+#       LH   LA   gH     gA              bHH              bAA              bHA              bAH              bAE              bEA              bEH              bHE  muH  muA   muE
+p = [0.1, 0., 0.001, 0.001, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal, b_unbounded_bal*2, b_unbounded_bal, 0.118, 0.118, 0.29]
+t2int = solve(ODEProblem(unboundeds, u0, tspan, p))(1000)
+
+1 - (t1int[1] / t1[1])
+1 - (t2int[1] / t2[1])
 
 #Fig 2 A and B
 #Compare bEH and LA interventions
 
 #Transmission scenarios of interest: all
-@load folder * "results_workspace_B_1.jld2" dat_B
-@load folder * "results_workspace_Bd_1.jld2" dat_Bd
-@load folder * "results_workspace_H_1.jld2" dat_H
-@load folder * "results_workspace_A_1.jld2" dat_A
-@load folder * "results_workspace_E_1.jld2" dat_E
-dat_1 = [dat_B, dat_Bd, dat_H, dat_A, dat_E]
+@load folder * "results_workspace_revised_Bd_1.jld2" dat_Bd
+@load folder * "results_workspace_revised_H_1.jld2" dat_H
+@load folder * "results_workspace_revised_A_1.jld2" dat_A
+@load folder * "results_workspace_revised_E_1.jld2" dat_E
+dat_1 = [dat_Bd, dat_H, dat_A, dat_E]
 
-@load folder * "results_workspace_B_2.jld2" dat_B
-@load folder * "results_workspace_Bd_2.jld2" dat_Bd
-@load folder * "results_workspace_H_2.jld2" dat_H
-@load folder * "results_workspace_A_2.jld2" dat_A
-@load folder * "results_workspace_E_2.jld2" dat_E
-dat_2 = [dat_B, dat_Bd, dat_H, dat_A, dat_E]
+@load folder * "results_workspace_revised_Bd_2.jld2" dat_Bd
+@load folder * "results_workspace_revised_H_2.jld2" dat_H
+@load folder * "results_workspace_revised_A_2.jld2" dat_A
+@load folder * "results_workspace_revised_E_2.jld2" dat_E
+dat_2 = [dat_Bd, dat_H, dat_A, dat_E]
 
-dat_B = Nothing
+@load folder * "results_workspace_revised_Bd_3.jld2" dat_Bd
+@load folder * "results_workspace_revised_H_3.jld2" dat_H
+@load folder * "results_workspace_revised_A_3.jld2" dat_A
+dat_3 = [dat_Bd, dat_H, dat_A]
+
 dat_Bd = Nothing
 dat_H = Nothing
 dat_A = Nothing
@@ -89,11 +112,12 @@ dat_E = Nothing
 #bEH fixed to 0, LA fixed to 0.1 (exp. 6)
 #bEH at TS, LA fixed to 0.1 (exp. 1)
 #bEH at TS, LA fixed to 0 (exp. 2)
-bEH_impact_unbounded = [map_impacts(dat_1[i][4][:,2], dat_1[i][6][:,2]) for i in 1:5]
-bEH_impact_bounded = [map_impacts(dat_2[i][4][:,2], dat_2[i][6][:,2]) for i in 1:5]
+bEH_impact_unbounded = [map_impacts(dat_1[i][4][:,2], dat_1[i][6][:,2]) for i in 1:4]
+bEH_impact_bounded = [map_impacts(dat_2[i][4][:,2], dat_2[i][6][:,2]) for i in 1:4]
 
-LA_impact_unbounded = [map_impacts(dat_1[i][1][:,2], dat_1[i][2][:,2]) for i in 1:5]
-LA_impact_bounded = [map_impacts(dat_2[i][1][:,2], dat_2[i][2][:,2]) for i in 1:5]
+LA_impact_unbounded = [map_impacts(dat_1[i][1][:,2], dat_1[i][2][:,2]) for i in 1:4]
+LA_impact_bounded = [map_impacts(dat_2[i][1][:,2], dat_2[i][2][:,2]) for i in 1:4]
+LA_impact_orig = [map_impacts(dat_3[i][1][:,2], dat_3[i][2][:,2]) for i in 1:3]
 
 @rput bEH_impact_unbounded bEH_impact_bounded LA_impact_unbounded LA_impact_bounded
 R"source('Scripts/Fig 2/fig2.R')"
@@ -106,8 +130,8 @@ R"source('Scripts/Fig 2/fig2.R')"
 #bEH varying (unif), LA varying (unif), regular bHA - exp. 10
 #bEH varying (unif), LA 0, regular bHA - exp. 9
 
-heatmap_impacts_unbounded = [map_impacts(dat_1[i][10][:,2], dat_1[i][9][:,2]) for i in 1:5]
-heatmap_impacts_bounded = [map_impacts(dat_2[i][10][:,2], dat_2[i][9][:,2]) for i in 1:5]
+heatmap_impacts_unbounded = [map_impacts(dat_1[i][10][:,2], dat_1[i][9][:,2]) for i in 1:4]
+heatmap_impacts_bounded = [map_impacts(dat_2[i][10][:,2], dat_2[i][9][:,2]) for i in 1:4]
 
 #Now for the Fig 3A and B - 
 #Experiments needed
@@ -128,17 +152,10 @@ R"source('Scripts/Fig 3/Fig3A.R')"
 #Experiments needed
 #varying bEH, LA fixed to 0.1 - exp 13
 #varying bEH, LA fixed to 0 - exp.9 
-fig3C_impacts_unbounded = [map_impacts(dat_1[i][13][:,2], dat_1[i][9][:,2]) for i in 1:5]
-fig3C_impacts_bounded = [map_impacts(dat_2[i][13][:,2], dat_2[i][9][:,2]) for i in 1:5]
+fig3C_impacts_unbounded = [map_impacts(dat_1[i][13][:,2], dat_1[i][9][:,2]) for i in 1:4]
+fig3C_impacts_bounded = [map_impacts(dat_2[i][13][:,2], dat_2[i][9][:,2]) for i in 1:4]
 
-#Also need the results of the original model
-@load folder * "results_workspace_datorig.jld2" dat_orig_unbounded
-@load folder * "results_workspace_datorig_bo.jld2" dat_orig_bounded
-
-impact_orig = map_impacts(dat_orig_unbounded[1][:,2], dat_orig_unbounded[2][:,2])
-impact_orig_bounded = map_impacts(dat_orig_bounded[1][:,2], dat_orig_bounded[2][:,2])
-
-@rput fig3C_impacts_bounded fig3C_impacts_unbounded impact_orig impact_orig_bounded
+@rput fig3C_impacts_bounded fig3C_impacts_unbounded
 R"source('Scripts/Fig 3/Fig3C.R')"
 
 #Fig 3 alternatively
@@ -146,7 +163,8 @@ R"source('Scripts/Fig 3/Fig3C.R')"
 #Fixed bEH (to each transmission scenario), LA fixed to 0.1 - experiment 1
 #As above but LA fixed to 0 - experiment 2
 
-f3_impacts_unbounded = [map_impacts(dat_1[i][1][:,2], dat_1[i][2]) for i in 1:5]
-f3_impacts_bounded = [map_impacts(dat_2[i][1][:,2], dat_2[i][2]) for i in 1:5]
-@rput f3_impacts_unbounded f3_impacts_bounded
+f3_impacts_unbounded = [map_impacts(dat_1[i][1][:,2], dat_1[i][2]) for i in 1:4]
+f3_impacts_bounded = [map_impacts(dat_2[i][1][:,2], dat_2[i][2]) for i in 1:4]
+f3_impacts_original = [map_impacts(dat_3[i][1][:,2], dat_3[i][2]) for i in 1:3]
+@rput f3_impacts_unbounded f3_impacts_bounded f3_impacts_original
 R"source('Scripts/Fig 3/Fig3_alt.R')"
