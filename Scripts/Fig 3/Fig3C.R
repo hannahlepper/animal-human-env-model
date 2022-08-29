@@ -48,7 +48,7 @@ p <- ggplot(df_unbounded, aes(bEH, mean_impact)) +
     labs(y = expression(paste(omega)),
          x = expression(paste(beta[EH])),        
          col = "") +
-    theme(legend.position = c(0.87, 0.8),
+    theme(legend.position = c(0.2, 0.8),
           legend.background = element_blank())
 print(p)
 dev.off()
