@@ -6,20 +6,21 @@ print("starting...")
 #myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 #myP <- colorRampPalette(c("#070066","#1100FA","#BAD3F7", "#F6FCBD", "#FFC803"))
 library(viridis)
-plot_heatmap2 <- function(df, title, breaks) {
-  df_summary <- df %>% mutate(., x_cut = cut(x, seq(0, 1, 0.1)), y_cut = cut(y, seq(0, 1, 0.1))) %>%
-    ddply(., .(x_cut, y_cut), summarise, mean_impact = mean(impact))
-  med_impact <- signif(mean(df_summary$mean_impact), 2)
-  max_impact <- signif(max(df_summary$mean_impact), 2)
+plot_heatmap2 <- function(df, title, limits) {
+  #df_summary <- df %>% mutate(., x_cut = cut(x, seq(0, 1, 0.1)), y_cut = cut(y, seq(0, 1, 0.1))) %>%
+  #  ddply(., .(x_cut, y_cut), summarise, mean_impact = mean(impact))
+  #med_impact <- signif(mean(df_summary$mean_impact), 2)
+  #max_impact <- signif(max(df_summary$mean_impact), 2)
   ggplot(df, aes(x, y, z = impact)) +
     stat_summary_2d(binwidth = 0.1) +
     #scale_fill_gradientn(colors = myP(100), limits = c(0, lim),
     #    breaks = breaks) +
-    scale_fill_viridis(breaks = c(0, med_impact, max_impact)) + #limits = c(0, lim)) +
+    scale_fill_viridis() + #breaks = c(0, med_impact, max_impact)) + #
     labs(x = expression(paste(beta[EH])), 
          y = expression(paste(Lambda[A], " (Pre-intervention)")),
          fill = expression(paste(omega)),
          title = title) +
+    guides(fill = guide_colourbar(barwidth = 10)) +
     theme_bw()
 }
 
@@ -45,7 +46,7 @@ df_list_bounded <- lapply(1:4, function(ts) {
 plot_list_appendix_unbounded <- lapply(1:4, function(ts) {
   if (ts < 6) {
     df <- df_list_unbounded[[ts]]
-    gplot <- plot_heatmap2(df, paste0(TS[ts]))
+    gplot <- plot_heatmap2(df, paste0(TS[ts]), limits = c(0, 0.4))
     gplot <- gplot + theme(legend.position = "bottom")
     return(gplot)
   } else {
@@ -56,7 +57,7 @@ plot_list_appendix_unbounded <- lapply(1:4, function(ts) {
 plot_list_appendix_bounded <- lapply(1:4, function(ts) {
   if (ts < 6) {
     df <- df_list_bounded[[ts]]
-    gplot <- plot_heatmap2(df, paste0(TS[ts]))
+    gplot <- plot_heatmap2(df, paste0(TS[ts]), limits = c(0, 0.4))
     gplot <- gplot + theme(legend.position = "bottom")
     return(gplot)
   } else {
