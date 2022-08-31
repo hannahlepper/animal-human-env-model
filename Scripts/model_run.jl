@@ -17,7 +17,7 @@ using JLD2
 
 #Generate data
 #Unbounded model
-N_sets = 1000000
+N_sets = 2000000
 @time dat_Bd = pmap(x -> model_run(get_params(1, x, N_sets, 
     pf, p_uncertainty, bEH_experiments_unbounded, LA_experiments), unboundeds), 1:13)
 @save "/mnt/d/results_workspace_revised_Bd_1.jld2" dat_Bd
