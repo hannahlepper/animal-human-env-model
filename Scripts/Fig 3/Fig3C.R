@@ -45,8 +45,8 @@ p <- ggplot(df_unbounded, aes(bEH, mean_impact)) +
     geom_ribbon(aes(ymin = lower, ymax = upper, fill = TS), 
       show.legend = FALSE, alpha = 0.2) +
     theme_bw(base_size = 7) +
-    labs(y = expression(paste(omega)),
-         x = expression(paste(beta[EH])),        
+    labs(x = expression("Rate of environment to human transmission (" ~ paste(beta[EH]) ~ ")"),
+         y = expression("Intervention impact (" ~ paste(omega) ~ ")"),        
          col = "") +
     theme(legend.position = c(0.2, 0.8),
           legend.background = element_blank())

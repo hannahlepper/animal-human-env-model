@@ -50,12 +50,7 @@ sens_unbounded <- sensitivity(x = eq_analysis_unbounded,
 df.equilibrium_unbounded <- data.frame(parameter = factor(p_value_names), 
                                      value = sens_unbounded)
 
-p1 <- ggplot(df.equilibrium_bounded, aes(parameter, value))
-p2 <- ggplot(df.equilibrium_unbounded, aes(parameter, value))
-
-
-p2 <- p2 + geom_bar(stat="identity", fill=brewer.pal(3,"Set1")[2]) + 
-  scale_x_discrete("Parameter", waiver(),  
+x_scale <- scale_x_discrete("Parameter", waiver(),  
                    c(expression(paste(beta[AA])),
                      expression(paste(beta[AE])),
                      expression(paste(beta[AH])),
@@ -70,11 +65,29 @@ p2 <- p2 + geom_bar(stat="identity", fill=brewer.pal(3,"Set1")[2]) +
                      expression(paste(Lambda[H])),
                      expression(paste(mu[A])),
                      expression(paste(mu[E])),
-                     expression(paste(mu[H])))) +
+                     expression(paste(mu[H]))))
+
+p1 <- ggplot(df.equilibrium_bounded, aes(parameter, value)) +
+  geom_bar(stat="identity", fill=brewer.pal(3,"Set1")[2]) + 
+  x_scale +
   ylab("Partial Variance") + 
     theme_bw() + 
-    theme(axis.text=element_text(size = 16, colour = "black"), axis.title=element_text(size=20)) +
-  labs(title = "Bounded model FAST")
+    theme(axis.text=element_text(size = 16, colour = "black"), 
+          axis.title=element_text(size=20),
+          plot.title = element_text(size = 20)) +
+  labs(title = "Bounded model") +
+  scale_y_continuous(limits = c(0, 0.75))
+
+p2 <- ggplot(df.equilibrium_unbounded, aes(parameter, value)) + 
+  geom_bar(stat="identity", fill=brewer.pal(3,"Set1")[2]) + 
+  x_scale +
+  ylab("Partial Variance") + 
+    theme_bw() + 
+    theme(axis.text=element_text(size = 16, colour = "black"), 
+          axis.title=element_text(size=20),
+          plot.title = element_text(size = 20)) +
+  labs(title = "Unbounded model") +
+  scale_y_continuous(limits = c(0, 0.75))
 
 png("plots/Fig1C.A.png", width = 16, height = 10, units = "cm", res = 300)
 p1

@@ -34,7 +34,7 @@ png("plots/Fig3c_alt.png", width = 15, height = 8, units = "cm", res = 300)
 p <- ggplot(df, aes(TS, mean_impact, col = mod)) +
     geom_pointrange(aes(ymin = lower, ymax = upper), , shape = 1,
         position = position_dodge(width = 0.2)) +
-    labs(y = expression(paste(omega)), x = "", col = "Environment type") +
+    labs(y = expression("Intervention impact (" ~ omega ~ ")"), x = "", col = "Environment type") +
     viridis::scale_colour_viridis(discrete = TRUE) +
     theme_bw() +
     theme(legend.position = c(0.12, 0.8),

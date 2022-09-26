@@ -48,7 +48,7 @@ png("plots/boxplotFig2A.png", width = 20, height = 12, units = "cm", res = 300)
 p <- ggplot(dfs_summary, aes(ts, mean_impact, col = param)) + 
       geom_pointrange(aes(ymin = lwr, ymax = upr), shape = 1,
                      position = position_dodge(width = 0.2)) +
-      labs(x = "", y = expression(omega)) +
+      labs(x = "", y = expression("Intervention impact (" ~ omega ~ ")")) +
       scale_colour_discrete("Parameter targeted\nfor intervention", labels = label_parse) +
       theme_bw()+
       theme(legend.position = c(0.1, 0.85),
